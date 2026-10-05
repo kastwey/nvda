@@ -188,7 +188,9 @@ class TestDescriptionListGroupCount(unittest.TestCase):
 				)
 				info = chromium.ChromiumUIATextInfo.__new__(chromium.ChromiumUIATextInfo)
 				with patch.object(
-					chromium.web.UIAWebTextInfo, "_getControlFieldForUIAObject", return_value=field
+					chromium.web.UIAWebTextInfo,
+					"_getControlFieldForUIAObject",
+					return_value=field,
 				):
 					self.assertIs(field, info._getControlFieldForUIAObject(obj))
 				self.assertEqual(expectedRole, field["role"])
@@ -262,7 +264,9 @@ class TestDescriptionListGroupCount(unittest.TestCase):
 
 	def test_comFailureDiscardsPartialCounts(self) -> None:
 		with patch.object(
-			_Walker, "GetNextSiblingElement", side_effect=chromium.COMError(-2147467259, "Failed", None)
+			_Walker,
+			"GetNextSiblingElement",
+			side_effect=chromium.COMError(-2147467259, "Failed", None),
 		):
 			self.assertIsNone(chromium._getDescriptionListInfo(_listElement("term", "definition")))
 
@@ -304,7 +308,8 @@ class TestNormalizeDescriptionListTerms(unittest.TestCase):
 
 	def test_nestedListsUseTheirOwnSemantics(self) -> None:
 		descriptionListField = textInfos.ControlField(
-			role=controlTypes.Role.DESCRIPTIONLIST, _descriptionListInfo=chromium._DescriptionListInfo()
+			role=controlTypes.Role.DESCRIPTIONLIST,
+			_descriptionListInfo=chromium._DescriptionListInfo(),
 		)
 		definitionField = textInfos.ControlField(role=controlTypes.Role.DEFINITION)
 		ordinaryListField = textInfos.ControlField(role=controlTypes.Role.LIST)
@@ -320,10 +325,12 @@ class TestNormalizeDescriptionListTerms(unittest.TestCase):
 		self.assertEqual("Nested item", itemField["name"])
 
 		outerListField = textInfos.ControlField(
-			role=controlTypes.Role.DESCRIPTIONLIST, _descriptionListInfo=chromium._DescriptionListInfo()
+			role=controlTypes.Role.DESCRIPTIONLIST,
+			_descriptionListInfo=chromium._DescriptionListInfo(),
 		)
 		innerListField = textInfos.ControlField(
-			role=controlTypes.Role.DESCRIPTIONLIST, _descriptionListInfo=chromium._DescriptionListInfo()
+			role=controlTypes.Role.DESCRIPTIONLIST,
+			_descriptionListInfo=chromium._DescriptionListInfo(),
 		)
 		innerItemField = textInfos.ControlField(role=controlTypes.Role.LISTITEM, name="Inner term")
 		descriptionListFields = _fieldCommands(

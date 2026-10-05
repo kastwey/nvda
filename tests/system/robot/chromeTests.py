@@ -1061,7 +1061,9 @@ def test_definitionList_names(useUIA: bool = False) -> None:
 		for text in expected:
 			_builtIn.should_be_equal(speech.count(text), 1, f"Speech must contain {text!r} once: {speech!r}")
 			_builtIn.should_be_equal(
-				braille.count(text), 1, f"Braille must contain {text!r} once: {braille!r}"
+				braille.count(text),
+				1,
+				f"Braille must contain {text!r} once: {braille!r}",
 			)
 	_chrome.getSpeechAfterKey("control+home")
 	_chrome.getSpeechAfterKey("h")

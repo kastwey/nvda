@@ -41,7 +41,8 @@ class descriptionListTests:
 		for root in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):
 			try:
 				with winreg.OpenKey(
-					root, r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\firefox.exe"
+					root,
+					r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\firefox.exe",
 				) as key:
 					path, _ = winreg.QueryValueEx(key, "")
 				if Path(path).is_file():
@@ -159,7 +160,8 @@ class descriptionListTests:
 			speech, braille = NvdaLib.getSpeechAndBrailleAfterKey("i")
 			BuiltIn().log(f"{host}: {speech!r}; braille={braille!r}")
 			BuiltIn().should_contain(
-				speech, f"{term}  term" + (f"  with {count} definitions" if count > 1 else "")
+				speech,
+				f"{term}  term" + (f"  with {count} definitions" if count > 1 else ""),
 			)
 			BuiltIn().should_contain(braille, f"trm {count} defs" if count > 1 else "trm")
 			BuiltIn().should_contain(braille, term)
@@ -180,7 +182,8 @@ class descriptionListTests:
 			for term in ("Alpha", "Alias"):
 				speech, braille = NvdaLib.getSpeechAndBrailleAfterKey("i")
 				BuiltIn().should_end_with(
-					speech, f"{term}  term" + (f"  with {count} definitions" if count > 1 else "")
+					speech,
+					f"{term}  term" + (f"  with {count} definitions" if count > 1 else ""),
 				)
 				if count > 1:
 					BuiltIn().should_contain(braille, "trm 2 defs")
@@ -213,6 +216,8 @@ class descriptionListTests:
 				return True
 
 			_blockUntilConditionMet(
-				cleanup, giveUpAfterSeconds=15, errorMessage="Test profile is still locked"
+				cleanup,
+				giveUpAfterSeconds=15,
+				errorMessage="Test profile is still locked",
 			)
 			self._temporaryDirectory = None

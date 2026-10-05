@@ -31,7 +31,7 @@ class TestDescriptionListFields(unittest.TestCase):
 							"IAccessible2::attribute_explicit-name": "true",
 							"name": "Accessible label",
 							"alwaysReportName": "true",
-						}
+						},
 					)
 					if duplicateFlag is not None:
 						field["nameIsDuplicate"] = duplicateFlag
@@ -61,7 +61,7 @@ class TestDescriptionListFields(unittest.TestCase):
 				"IAccessible2::attribute_xml-roles": "button",
 				"name": "Button label",
 				"nameIsDuplicate": "true",
-			}
+			},
 		)
 		Gecko_ia2_TextInfo.__new__(Gecko_ia2_TextInfo)._normalizeControlField(field)
 		self.assertEqual(controlTypes.Role.BUTTON, field["role"])
@@ -80,7 +80,7 @@ class TestDescriptionListFields(unittest.TestCase):
 							"IAccessible::role": str(oleacc.ROLE_SYSTEM_LISTITEM),
 							tagAttribute: tag,
 							"definition-count": str(count),
-						}
+						},
 					)
 					info._normalizeControlField(field)
 					self.assertEqual(controlTypes.Role.TERM, field["role"])
@@ -99,7 +99,7 @@ class TestDescriptionListFields(unittest.TestCase):
 						tagAttribute: tag,
 						"description-list-group-count": "2",
 						"_childcontrolcount": "7",
-					}
+					},
 				)
 				info._normalizeControlField(field)
 				self.assertEqual(controlTypes.Role.DESCRIPTIONLIST, field["role"])
@@ -136,7 +136,7 @@ class TestDescriptionListPresentation(unittest.TestCase):
 		for fieldType in ("start_inControlFieldStack", "end_relative", "end_removedFromControlFieldStack"):
 			with self.subTest(fieldType=fieldType):
 				self.assertFalse(
-					getControlFieldSpeech(field, [], fieldType, self.formatConfig, reason=OutputReason.CARET)
+					getControlFieldSpeech(field, [], fieldType, self.formatConfig, reason=OutputReason.CARET),
 				)
 
 	def test_brailleCount(self) -> None:
@@ -155,7 +155,8 @@ class TestDescriptionListPresentation(unittest.TestCase):
 				with self.subTest(role=role, count=count):
 					field = textInfos.ControlField(role=role, _childcontrolcount=count, _startOfNode=True)
 					self.assertEqual(
-						f"{label}2", getControlFieldBraille(None, field, [], True, self.formatConfig)
+						f"{label}2",
+						getControlFieldBraille(None, field, [], True, self.formatConfig),
 					)
 
 	def test_descriptionListContainerPresentation(self) -> None:
@@ -182,19 +183,28 @@ class TestDescriptionListPresentation(unittest.TestCase):
 							[
 								item
 								for item in getControlFieldSpeech(
-									field, [], fieldType, self.formatConfig, reason=reason
+									field,
+									[],
+									fieldType,
+									self.formatConfig,
+									reason=reason,
 								)
 								if item
 							],
 						)
 					self.assertEqual(
-						"dlst end", getControlFieldBraille(None, field, [], False, self.formatConfig)
+						"dlst end",
+						getControlFieldBraille(None, field, [], False, self.formatConfig),
 					)
 					self.formatConfig["reportLists"] = False
 					self.assertFalse(
 						getControlFieldSpeech(
-							field, [], "start_addedToControlFieldStack", self.formatConfig, reason=reason
-						)
+							field,
+							[],
+							"start_addedToControlFieldStack",
+							self.formatConfig,
+							reason=reason,
+						),
 					)
 					self.assertFalse(getControlFieldBraille(None, field, [], True, self.formatConfig))
 					self.formatConfig["reportLists"] = True
@@ -203,7 +213,7 @@ class TestDescriptionListPresentation(unittest.TestCase):
 		self.formatConfig["reportLists"] = False
 		field = textInfos.ControlField(role=controlTypes.Role.TERM, **{"definition-count": 3})
 		self.assertFalse(
-			getControlFieldSpeech(field, [], "start_relative", self.formatConfig, reason=OutputReason.CARET)
+			getControlFieldSpeech(field, [], "start_relative", self.formatConfig, reason=OutputReason.CARET),
 		)
 		self.assertFalse(getControlFieldBraille(None, field, [], True, self.formatConfig))
 
@@ -212,30 +222,46 @@ class TestDescriptionListPresentation(unittest.TestCase):
 			with self.subTest(role=role):
 				field = textInfos.ControlField(role=role)
 				expectedSpeech = getControlFieldSpeech(
-					field, [], "start_relative", self.formatConfig, reason=OutputReason.CARET
+					field,
+					[],
+					"start_relative",
+					self.formatConfig,
+					reason=OutputReason.CARET,
 				)
 				expectedBraille = getControlFieldBraille(None, field, [], True, self.formatConfig)
 				field["definition-count"] = 3
 				self.assertEqual(
 					expectedSpeech,
 					getControlFieldSpeech(
-						field, [], "start_relative", self.formatConfig, reason=OutputReason.CARET
+						field,
+						[],
+						"start_relative",
+						self.formatConfig,
+						reason=OutputReason.CARET,
 					),
 				)
 				self.assertEqual(
-					expectedBraille, getControlFieldBraille(None, field, [], True, self.formatConfig)
+					expectedBraille,
+					getControlFieldBraille(None, field, [], True, self.formatConfig),
 				)
 
 	def test_customRoleDescriptionsKeepCount(self) -> None:
 		field = textInfos.ControlField(
-			role=controlTypes.Role.TERM, roleText="entry", roleTextBraille="ent", **{"definition-count": 2}
+			role=controlTypes.Role.TERM,
+			roleText="entry",
+			roleTextBraille="ent",
+			**{"definition-count": 2},
 		)
 		self.assertEqual(
 			["entry", "with 2 definitions"],
 			[
 				item
 				for item in getControlFieldSpeech(
-					field, [], "start_relative", self.formatConfig, reason=OutputReason.CARET
+					field,
+					[],
+					"start_relative",
+					self.formatConfig,
+					reason=OutputReason.CARET,
 				)
 				if item
 			],
