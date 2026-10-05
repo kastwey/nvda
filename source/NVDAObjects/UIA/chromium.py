@@ -1,12 +1,13 @@
 # A part of NonVisual Desktop Access (NVDA)
-# This file is covered by the GNU General Public License.
-# See the file COPYING for more details.
-# Copyright (C) 2020-2021 NV Access limited, Leonard de Ruijter
+# Copyright (C) 2020-2026 NV Access Limited, Leonard de Ruijter, Juanjo M
+# This file may be used under the terms of the GNU General Public License, version 2 or later, as modified by the NVDA license.
+# For full terms and any additional permissions, see the NVDA license file: https://github.com/nvaccess/nvda/blob/master/copying.txt
 
 
 import UIAHandler  # noqa: I001
 from . import web
 import controlTypes
+import textInfos
 
 """
 This module provides UIA behaviour specific to the chromium family of browsers.
@@ -75,6 +76,29 @@ class ChromiumUIA(web.UIAWeb):
 
 
 class ChromiumUIATreeInterceptor(web.UIAWebTreeInterceptor):
+	def getEnclosingContainerRange(self, textRange: textInfos.TextInfo) -> textInfos.TextInfo | None:
+		"""Include a terminal line break omitted from Chromium's element range.
+
+		Without the line break, collapsing to the container's end and expanding
+		to a line can return its final line instead of the following content.
+		Only extend over a line break starting exactly at the current endpoint;
+		do not skip following content, a separate blank line or a character expanded
+		backwards at document end.
+		"""
+		container: textInfos.TextInfo | None = super().getEnclosingContainerRange(textRange)
+		if container is None:
+			return None
+		end: textInfos.TextInfo = container.copy()
+		end.collapse(end=True)
+		end.expand(textInfos.UNIT_CHARACTER)
+		if end.text in ("\n", "\r", "\r\n") and end.compareEndPoints(container, "startToEnd") == 0:
+			line: textInfos.TextInfo = container.copy()
+			line.collapse(end=True)
+			line.expand(textInfos.UNIT_LINE)
+			if line.compareEndPoints(container, "startToEnd") < 0:
+				container.setEndPoint(end, "endToEnd")
+		return container
+
 	def _get_documentConstantIdentifier(self):
 		return self.rootNVDAObject.parent._getUIACacheablePropertyValue(UIAHandler.UIA_AutomationIdPropertyId)
 

@@ -884,6 +884,45 @@ def test_i7562():
 	)
 
 
+def test_movePastEndOfContainer(useUIA: bool) -> None:
+	"""Moving past an outer list must not remain on its final nested item's line."""
+	# AllowUiaInChromium.YES / NO: explicitly exercise both accessibility backends.
+	_NvdaLib.getSpyLib().set_configValue(["UIA", "allowInChromium"], 2 if useUIA else 3)
+	containers: tuple[tuple[str, str], ...] = (
+		("unordered", "<ul><li>Alpha unordered<ul><li>Last nested unordered item</li></ul></li></ul>"),
+		("ordered", "<ol><li>Alpha ordered<ul><li>Last nested ordered item</li></ul></li></ol>"),
+		(
+			"description",
+			"""<dl><dt>Alpha description</dt><dd>Definition
+			<ul><li>Last nested description item</li></ul></dd></dl>""",
+		),
+		(
+			"wrapped",
+			"""<dl><div><dt>Alpha wrapped</dt><dd>Definition
+			<ul><li>Last nested wrapped item</li></ul></dd></div></dl>""",
+		),
+	)
+	_chrome.prepareChrome(
+		"".join(
+			f"<h2>{name}</h2>{container}<button>After {name} list</button>" for name, container in containers
+		),
+	)
+	for name, _container in containers:
+		_chrome.getSpeechAfterKey("2")
+		_asserts.speech_contains(_chrome.getSpeechAfterKey("l"), [f"Alpha {name}"])
+		speech, braille = _NvdaLib.getSpeechAndBrailleAfterKey(",")
+		_asserts.speech_contains(speech, [f"After {name} list"])
+		_asserts.braille_contains(braille, [f"After {name} list"])
+		# Returning from a nested list must preserve the outer container's endpoint.
+		_chrome.getSpeechAfterKey("shift+2")
+		_chrome.getSpeechAfterKey("l")
+		_asserts.speech_contains(_chrome.getSpeechAfterKey("l"), [f"Last nested {name} item"])
+		_asserts.speech_contains(_chrome.getSpeechAfterKey("shift+l"), [f"Alpha {name}"])
+		speech, braille = _NvdaLib.getSpeechAndBrailleAfterKey(",")
+		_asserts.speech_contains(speech, [f"After {name} list"])
+		_asserts.braille_contains(braille, [f"After {name} list"])
+
+
 def test_pr11606():
 	"""
 	Announce the correct line when placed at the end of a link at the end of a list item in a contenteditable

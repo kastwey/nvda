@@ -54,6 +54,14 @@ focus mode is turned on on focused read-only list item
 	[Documentation]	Focused list items with a focusable list container should cause focus mode to be turned on automatically.
 	[Tags]	chrome_list
 	test_focus_mode_on_focusable_read_only_lists
+Move past lists with UI Automation
+	[Documentation]	Comma moves past outer lists ending in a nested list, rather than reading their final line again.
+	[Tags]	chrome_list	chrome_container
+	test_movePastEndOfContainer	${True}
+Move past lists with IAccessible2
+	[Documentation]	The same container navigation cases continue to work with IAccessible2.
+	[Tags]	chrome_list	chrome_container
+	test_movePastEndOfContainer	${False}
 
 ## chrome_annotations tests
 ### ARIA annotations: details, descriptions, etc
