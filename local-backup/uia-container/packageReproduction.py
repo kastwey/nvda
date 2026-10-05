@@ -2,8 +2,8 @@
 
 import hashlib
 import json
-from pathlib import Path
 import zipfile
+from pathlib import Path
 
 
 def main() -> None:
@@ -13,13 +13,13 @@ def main() -> None:
 		"container-navigation.html",
 		"technical-notes.md",
 		"earlier-feature-run-excerpt.log",
+		"official-reproduction.log",
+		"candidate-reproduction.log",
+		"browser-observations.json",
 	)
 	manifest = {
-		"status": "Clean-build keyboard reproduction and candidate browser validation still pending",
-		"files": {
-			name: hashlib.sha256((root / name).read_bytes()).hexdigest()
-			for name in names
-		},
+		"status": "Verified: official UIA 0/8, official IA2 8/8; candidate UIA and IA2 8/8; chrome_list 6/6",
+		"files": {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in names},
 	}
 	archivePath = root / "uia-container-reproduction.zip"
 	with zipfile.ZipFile(archivePath, "w", compression=zipfile.ZIP_DEFLATED) as archive:

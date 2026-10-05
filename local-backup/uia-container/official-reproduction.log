@@ -1,0 +1,817 @@
+REVIEWED EXCERPTS OF FRESH NVDA DEBUG LOGS -- NOT THE COMPLETE SESSION LOGS
+
+Date: 2026-10-05; source commit: c22a509337c0b94ac5459ab2a749eeeb9cb06116; run: baseline-system-05
+
+The production source was not patched by the external test harness.
+
+Only startup versions, backend, fixture navigation/output and one repeated braille error are retained.
+
+Unrelated window titles, configuration and session records are omitted; retained records are verbatim.
+
+Raw speech records precede symbol processing; synth Sequence records and JSON contain spoken symbols.
+
+
+===== IA2 =====
+
+Raw log SHA256: 966813b67fb0e19589cc49afa7cc826f1a670c685fca3f0f3ecf067a1951c3a6
+
+Related repeated braille TypeErrors: 0 (first retained; not fixed by this candidate)
+
+INFO - __main__ (07:50:47.058) - MainThread (233952):
+Starting NVDA version 2027.1.0dev AMD64
+
+INFO - core.main (07:50:49.478) - MainThread (233952):
+Windows version: Windows 11 25H2 (10.0.26200.9550) workstation AMD64
+
+INFO - core.main (07:50:49.479) - MainThread (233952):
+Using Python version 3.13.15 (main, Sep  1 2026, 14:16:48) [MSC v.1944 64 bit (AMD64)]
+
+INFO - core.main (07:50:49.479) - MainThread (233952):
+Using comtypes version 1.4.16
+
+DEBUG - treeInterceptorHandler.update (07:50:53.145) - MainThread (233952):
+Adding new treeInterceptor to runningTable: <NVDAObjects.IAccessible.chromium.ChromeVBuf object at 0x0000021CD1CC70E0>
+
+IO - inputCore.InputManager.executeGesture (07:50:56.867) - RF Test Spy Thread (90036):
+Input: kb(desktop):control+home
+
+IO - inputCore.InputManager.executeGesture (07:50:57.900) - RF Test Spy Thread (90036):
+Input: kb(desktop):2
+
+IO - speech.speech.speak (07:50:57.901) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'Unordered list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:50:57.940) - MainThread (233952):
+Braille regions text: ['h2 Unordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:50:58.959) - RF Test Spy Thread (90036):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:50:58.961) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '• Alpha unordered']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:50:58.961) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'bullet  Alpha unordered  ', IndexCommand(17)]
+
+IO - braille.buffers.BrailleBuffer.update (07:50:59.044) - MainThread (233952):
+Braille regions text: ['lst1 • Alpha unordered ']
+
+IO - inputCore.InputManager.executeGesture (07:51:00.039) - RF Test Spy Thread (90036):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:51:00.088) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'After unordered list', 'button']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:00.088) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'After unordered list  ', 'button  ', IndexCommand(18)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:00.091) - MainThread (233952):
+Braille regions text: ['btn After unordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:01.246) - RF Test Spy Thread (90036):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:51:01.248) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'Unordered list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:51:01.296) - MainThread (233952):
+Braille regions text: ['h2 Unordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:02.293) - RF Test Spy Thread (90036):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:51:02.295) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '• Alpha unordered']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:02.295) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'bullet  Alpha unordered  ', IndexCommand(20)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:02.390) - MainThread (233952):
+Braille regions text: ['lst1 • Alpha unordered ']
+
+IO - inputCore.InputManager.executeGesture (07:51:03.363) - RF Test Spy Thread (90036):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:51:03.365) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '◦ Last nested unordered item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:03.365) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'white bullet  Last nested unordered item  ', IndexCommand(21)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:03.503) - MainThread (233952):
+Braille regions text: ['lst1 ◦ Last nested unordered item lst end lst end']
+
+IO - inputCore.InputManager.executeGesture (07:51:04.417) - RF Test Spy Thread (90036):
+Input: kb(desktop):shift+l
+
+IO - speech.speech.speak (07:51:04.419) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), '• Alpha unordered']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:04.419) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'bullet  Alpha unordered  ', IndexCommand(22)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:04.508) - MainThread (233952):
+Braille regions text: ['lst1 • Alpha unordered ']
+
+IO - inputCore.InputManager.executeGesture (07:51:05.465) - RF Test Spy Thread (90036):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:51:05.505) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'After unordered list', 'button']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:05.505) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'After unordered list  ', 'button  ', IndexCommand(23)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:05.507) - MainThread (233952):
+Braille regions text: ['btn After unordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:06.596) - RF Test Spy Thread (90036):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:51:06.598) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'Unordered list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:51:06.632) - MainThread (233952):
+Braille regions text: ['h2 Unordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:07.648) - RF Test Spy Thread (90036):
+Input: kb(desktop):2
+
+IO - speech.speech.speak (07:51:07.649) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'Ordered list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:51:07.692) - MainThread (233952):
+Braille regions text: ['h2 Ordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:08.690) - RF Test Spy Thread (90036):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:51:08.692) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '1. Alpha ordered']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:08.693) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', '1. Alpha ordered  ', IndexCommand(26)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:08.790) - MainThread (233952):
+Braille regions text: ['lst1 1. Alpha ordered ']
+
+IO - inputCore.InputManager.executeGesture (07:51:09.764) - RF Test Spy Thread (90036):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:51:09.803) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'After ordered list', 'button']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:09.803) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'After ordered list  ', 'button  ', IndexCommand(27)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:09.805) - MainThread (233952):
+Braille regions text: ['btn After ordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:10.942) - RF Test Spy Thread (90036):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:51:10.945) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'Ordered list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:51:11.025) - MainThread (233952):
+Braille regions text: ['h2 Ordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:11.983) - RF Test Spy Thread (90036):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:51:11.986) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '1. Alpha ordered']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:11.987) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', '1. Alpha ordered  ', IndexCommand(29)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:12.137) - MainThread (233952):
+Braille regions text: ['lst1 1. Alpha ordered ']
+
+IO - inputCore.InputManager.executeGesture (07:51:13.053) - RF Test Spy Thread (90036):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:51:13.055) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '◦ Last nested ordered item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:13.055) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'white bullet  Last nested ordered item  ', IndexCommand(30)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:13.245) - MainThread (233952):
+Braille regions text: ['lst1 ◦ Last nested ordered item lst end lst end']
+
+IO - inputCore.InputManager.executeGesture (07:51:14.095) - RF Test Spy Thread (90036):
+Input: kb(desktop):shift+l
+
+IO - speech.speech.speak (07:51:14.097) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), '1. Alpha ordered']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:14.097) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), '1. Alpha ordered  ', IndexCommand(31)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:14.180) - MainThread (233952):
+Braille regions text: ['lst1 1. Alpha ordered ']
+
+IO - inputCore.InputManager.executeGesture (07:51:15.166) - RF Test Spy Thread (90036):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:51:15.200) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'After ordered list', 'button']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:15.200) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'After ordered list  ', 'button  ', IndexCommand(32)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:15.202) - MainThread (233952):
+Braille regions text: ['btn After ordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:16.345) - RF Test Spy Thread (90036):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:51:16.347) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'Ordered list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:51:16.382) - MainThread (233952):
+Braille regions text: ['h2 Ordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:17.416) - RF Test Spy Thread (90036):
+Input: kb(desktop):2
+
+IO - speech.speech.speak (07:51:17.418) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'Description list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:51:17.465) - MainThread (233952):
+Braille regions text: ['h2 Description list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:18.482) - RF Test Spy Thread (90036):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:51:18.484) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'list', 'with 2 items', 'Alpha description']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:18.484) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 2 items  ', 'Alpha description  ', IndexCommand(35)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:18.518) - MainThread (233952):
+Braille regions text: ['lst2 Alpha description ']
+
+IO - inputCore.InputManager.executeGesture (07:51:19.507) - RF Test Spy Thread (90036):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:51:19.543) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'After description list', 'button']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:19.544) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'After description list  ', 'button  ', IndexCommand(36)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:19.546) - MainThread (233952):
+Braille regions text: ['btn After description list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:20.677) - RF Test Spy Thread (90036):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:51:20.678) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'Description list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:51:20.713) - MainThread (233952):
+Braille regions text: ['h2 Description list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:21.736) - RF Test Spy Thread (90036):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:51:21.738) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'list', 'with 2 items', 'Alpha description']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:21.739) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 2 items  ', 'Alpha description  ', IndexCommand(38)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:21.774) - MainThread (233952):
+Braille regions text: ['lst2 Alpha description ']
+
+IO - inputCore.InputManager.executeGesture (07:51:22.823) - RF Test Spy Thread (90036):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:51:22.825) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '• Last nested description item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:22.825) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'bullet  Last nested description item  ', IndexCommand(39)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:22.913) - MainThread (233952):
+Braille regions text: ['lst1 • Last nested description item lst end lst end']
+
+IO - inputCore.InputManager.executeGesture (07:51:23.883) - RF Test Spy Thread (90036):
+Input: kb(desktop):shift+l
+
+IO - speech.speech.speak (07:51:23.884) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'Alpha description']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:23.885) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'Alpha description  ', IndexCommand(40)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:23.917) - MainThread (233952):
+Braille regions text: ['lst2 Alpha description ']
+
+IO - inputCore.InputManager.executeGesture (07:51:24.939) - RF Test Spy Thread (90036):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:51:24.972) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'After description list', 'button']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:24.972) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'After description list  ', 'button  ', IndexCommand(41)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:24.974) - MainThread (233952):
+Braille regions text: ['btn After description list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:26.089) - RF Test Spy Thread (90036):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:51:26.091) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'Description list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:51:26.132) - MainThread (233952):
+Braille regions text: ['h2 Description list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:27.131) - RF Test Spy Thread (90036):
+Input: kb(desktop):2
+
+IO - speech.speech.speak (07:51:27.133) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'Wrapped description list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:51:27.168) - MainThread (233952):
+Braille regions text: ['h2 Wrapped description list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:28.179) - RF Test Spy Thread (90036):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:51:28.181) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'list', 'with 2 items', 'Alpha wrapped']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:28.181) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 2 items  ', 'Alpha wrapped  ', IndexCommand(44)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:28.218) - MainThread (233952):
+Braille regions text: ['lst2 Alpha wrapped ']
+
+IO - inputCore.InputManager.executeGesture (07:51:29.241) - RF Test Spy Thread (90036):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:51:29.306) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'After wrapped list', 'button']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:29.307) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'After wrapped list  ', 'button  ', IndexCommand(45)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:29.309) - MainThread (233952):
+Braille regions text: ['btn After wrapped list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:30.424) - RF Test Spy Thread (90036):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:51:30.425) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'Wrapped description list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:51:30.462) - MainThread (233952):
+Braille regions text: ['h2 Wrapped description list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:31.492) - RF Test Spy Thread (90036):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:51:31.494) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'list', 'with 2 items', 'Alpha wrapped']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:31.494) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 2 items  ', 'Alpha wrapped  ', IndexCommand(47)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:31.532) - MainThread (233952):
+Braille regions text: ['lst2 Alpha wrapped ']
+
+IO - inputCore.InputManager.executeGesture (07:51:32.573) - RF Test Spy Thread (90036):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:51:32.574) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '• Last nested wrapped item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:32.575) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'bullet  Last nested wrapped item  ', IndexCommand(48)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:32.665) - MainThread (233952):
+Braille regions text: ['lst1 • Last nested wrapped item lst end lst end']
+
+IO - inputCore.InputManager.executeGesture (07:51:33.625) - RF Test Spy Thread (90036):
+Input: kb(desktop):shift+l
+
+IO - speech.speech.speak (07:51:33.627) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'Alpha wrapped']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:33.627) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'Alpha wrapped  ', IndexCommand(49)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:33.663) - MainThread (233952):
+Braille regions text: ['lst2 Alpha wrapped ']
+
+IO - inputCore.InputManager.executeGesture (07:51:34.712) - RF Test Spy Thread (90036):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:51:34.760) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'After wrapped list', 'button']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:51:34.760) - MainThread (233952):
+Sequence: [LangChangeCommand ('en'), 'After wrapped list  ', 'button  ', IndexCommand(50)]
+
+IO - braille.buffers.BrailleBuffer.update (07:51:34.762) - MainThread (233952):
+Braille regions text: ['btn After wrapped list ']
+
+IO - inputCore.InputManager.executeGesture (07:51:35.895) - RF Test Spy Thread (90036):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:51:35.896) - MainThread (233952):
+Speaking [LangChangeCommand ('en'), 'Wrapped description list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:51:35.933) - MainThread (233952):
+Braille regions text: ['h2 Wrapped description list ']
+
+
+===== UIA =====
+
+Raw log SHA256: d221e5f07e2a213b27e9ab113bc517f0b82ed8c9023d9a9d0f37b77e5e7d7ad7
+
+Related repeated braille TypeErrors: 24 (first retained; not fixed by this candidate)
+
+INFO - __main__ (07:51:50.510) - MainThread (215652):
+Starting NVDA version 2027.1.0dev AMD64
+
+INFO - core.main (07:51:52.657) - MainThread (215652):
+Windows version: Windows 11 25H2 (10.0.26200.9550) workstation AMD64
+
+INFO - core.main (07:51:52.657) - MainThread (215652):
+Using Python version 3.13.15 (main, Sep  1 2026, 14:16:48) [MSC v.1944 64 bit (AMD64)]
+
+INFO - core.main (07:51:52.657) - MainThread (215652):
+Using comtypes version 1.4.16
+
+DEBUG - treeInterceptorHandler.update (07:51:54.244) - MainThread (215652):
+Adding new treeInterceptor to runningTable: <NVDAObjects.UIA.chromium.ChromiumUIATreeInterceptor object at 0x00000180D2D617F0>
+
+DEBUG - treeInterceptorHandler.update (07:51:54.681) - MainThread (215652):
+Adding new treeInterceptor to runningTable: <NVDAObjects.UIA.chromium.ChromiumUIATreeInterceptor object at 0x00000180D0738690>
+
+IO - inputCore.InputManager.executeGesture (07:51:58.343) - RF Test Spy Thread (119200):
+Input: kb(desktop):control+home
+
+IO - inputCore.InputManager.executeGesture (07:51:59.487) - RF Test Spy Thread (119200):
+Input: kb(desktop):2
+
+IO - speech.speech.speak (07:51:59.499) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'Unordered list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:51:59.532) - MainThread (215652):
+Braille regions text: ['h2 Unordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:52:00.566) - RF Test Spy Thread (119200):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:52:00.582) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '• Alpha unordered\n']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:00.582) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'bullet  Alpha unordered  ', IndexCommand(16)]
+
+DEBUGWARNING - braille.brailleHandler.BrailleHandler._handlePendingUpdate (07:52:00.616) - MainThread (215652):
+Region update failed for CursorManagerRegion (''), object probably died
+Traceback (most recent call last):
+  File "braille\brailleHandler.py", line 868, in _handlePendingUpdate
+    region.update()
+    ~~~~~~~~~~~~~^^
+  File "braille\regions\textInfo.py", line 310, in update
+    self._addTextWithFields(chunk, formatConfig)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "braille\regions\textInfo.py", line 201, in _addTextWithFields
+    text = info.getControlFieldBraille(field, ctrlFields, True, formatConfig)
+  File "textInfos\__init__.py", line 688, in getControlFieldBraille
+    return braille.regions.properties.getControlFieldBraille(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+    	self,
+     ^^^^^
+    ...<3 lines>...
+    	formatConfig,
+     ^^^^^^^^^^^^^
+    )
+    ^
+  File "braille\regions\properties.py", line 417, in getControlFieldBraille
+    return _getControlFieldForReportStart(
+    	description=description,
+    ...<11 lines>...
+    	errorMessage=errorMessage,
+    )
+  File "braille\regions\properties.py", line 310, in _getControlFieldForReportStart
+    text = getPropertiesBraille(**props)
+  File "braille\regions\properties.py", line 110, in getPropertiesBraille
+    roleText += childControlCount
+TypeError: can only concatenate str (not "int") to str
+
+IO - inputCore.InputManager.executeGesture (07:52:01.724) - RF Test Spy Thread (119200):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:52:01.772) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '◦ Last nested unordered item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:01.773) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'white bullet  Last nested unordered item  ', IndexCommand(17)]
+
+IO - inputCore.InputManager.executeGesture (07:52:07.909) - RF Test Spy Thread (119200):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:52:07.921) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'Unordered list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:52:07.951) - MainThread (215652):
+Braille regions text: ['h2 Unordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:52:08.973) - RF Test Spy Thread (119200):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:52:08.990) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '• Alpha unordered\n']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:08.990) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'bullet  Alpha unordered  ', IndexCommand(19)]
+
+IO - inputCore.InputManager.executeGesture (07:52:10.131) - RF Test Spy Thread (119200):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:52:10.151) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '◦ Last nested unordered item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:10.152) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'white bullet  Last nested unordered item  ', IndexCommand(20)]
+
+IO - inputCore.InputManager.executeGesture (07:52:11.275) - RF Test Spy Thread (119200):
+Input: kb(desktop):shift+l
+
+IO - speech.speech.speak (07:52:11.300) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), '• Alpha unordered\n']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:11.300) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'bullet  Alpha unordered  ', IndexCommand(21)]
+
+IO - inputCore.InputManager.executeGesture (07:52:12.446) - RF Test Spy Thread (119200):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:52:12.500) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '◦ Last nested unordered item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:12.500) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'white bullet  Last nested unordered item  ', IndexCommand(22)]
+
+IO - inputCore.InputManager.executeGesture (07:52:18.622) - RF Test Spy Thread (119200):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:52:18.635) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'Unordered list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:52:18.664) - MainThread (215652):
+Braille regions text: ['h2 Unordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:52:19.707) - RF Test Spy Thread (119200):
+Input: kb(desktop):2
+
+IO - speech.speech.speak (07:52:19.719) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'Ordered list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:52:19.751) - MainThread (215652):
+Braille regions text: ['h2 Ordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:52:20.761) - RF Test Spy Thread (119200):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:52:20.799) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '1. Alpha ordered\n']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:20.799) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', '1. Alpha ordered  ', IndexCommand(25)]
+
+IO - inputCore.InputManager.executeGesture (07:52:21.921) - RF Test Spy Thread (119200):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:52:21.968) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '◦ Last nested ordered item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:21.968) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'white bullet  Last nested ordered item  ', IndexCommand(26)]
+
+IO - inputCore.InputManager.executeGesture (07:52:28.134) - RF Test Spy Thread (119200):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:52:28.149) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'Ordered list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:52:28.182) - MainThread (215652):
+Braille regions text: ['h2 Ordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:52:29.227) - RF Test Spy Thread (119200):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:52:29.265) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '1. Alpha ordered\n']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:29.265) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', '1. Alpha ordered  ', IndexCommand(28)]
+
+IO - inputCore.InputManager.executeGesture (07:52:30.360) - RF Test Spy Thread (119200):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:52:30.383) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '◦ Last nested ordered item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:30.383) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'white bullet  Last nested ordered item  ', IndexCommand(29)]
+
+IO - inputCore.InputManager.executeGesture (07:52:31.528) - RF Test Spy Thread (119200):
+Input: kb(desktop):shift+l
+
+IO - speech.speech.speak (07:52:31.564) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), '1. Alpha ordered\n']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:31.565) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), '1. Alpha ordered  ', IndexCommand(30)]
+
+IO - inputCore.InputManager.executeGesture (07:52:32.699) - RF Test Spy Thread (119200):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:52:32.752) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '◦ Last nested ordered item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:32.752) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'white bullet  Last nested ordered item  ', IndexCommand(31)]
+
+IO - inputCore.InputManager.executeGesture (07:52:38.875) - RF Test Spy Thread (119200):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:52:38.890) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'Ordered list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:52:38.926) - MainThread (215652):
+Braille regions text: ['h2 Ordered list ']
+
+IO - inputCore.InputManager.executeGesture (07:52:40.004) - RF Test Spy Thread (119200):
+Input: kb(desktop):2
+
+IO - speech.speech.speak (07:52:40.017) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'Description list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:52:40.045) - MainThread (215652):
+Braille regions text: ['h2 Description list ']
+
+IO - inputCore.InputManager.executeGesture (07:52:41.040) - RF Test Spy Thread (119200):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:52:41.058) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', 'Alpha description']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:41.059) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'Alpha description  ', IndexCommand(34)]
+
+IO - inputCore.InputManager.executeGesture (07:52:42.193) - RF Test Spy Thread (119200):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:52:42.241) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '• Last nested description item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:42.241) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'bullet  Last nested description item  ', IndexCommand(35)]
+
+IO - inputCore.InputManager.executeGesture (07:52:48.391) - RF Test Spy Thread (119200):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:52:48.406) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'Description list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:52:48.439) - MainThread (215652):
+Braille regions text: ['h2 Description list ']
+
+IO - inputCore.InputManager.executeGesture (07:52:49.520) - RF Test Spy Thread (119200):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:52:49.542) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', 'Alpha description']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:49.542) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'Alpha description  ', IndexCommand(37)]
+
+IO - inputCore.InputManager.executeGesture (07:52:50.551) - RF Test Spy Thread (119200):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:52:50.573) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '• Last nested description item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:50.573) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'bullet  Last nested description item  ', IndexCommand(38)]
+
+IO - inputCore.InputManager.executeGesture (07:52:51.705) - RF Test Spy Thread (119200):
+Input: kb(desktop):shift+l
+
+IO - speech.speech.speak (07:52:51.724) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'Alpha description']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:51.724) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'Alpha description  ', IndexCommand(39)]
+
+IO - inputCore.InputManager.executeGesture (07:52:52.888) - RF Test Spy Thread (119200):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:52:52.945) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '• Last nested description item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:52:52.945) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'bullet  Last nested description item  ', IndexCommand(40)]
+
+IO - inputCore.InputManager.executeGesture (07:52:59.075) - RF Test Spy Thread (119200):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:52:59.091) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'Description list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:52:59.127) - MainThread (215652):
+Braille regions text: ['h2 Description list ']
+
+IO - inputCore.InputManager.executeGesture (07:53:00.148) - RF Test Spy Thread (119200):
+Input: kb(desktop):2
+
+IO - speech.speech.speak (07:53:00.162) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'Wrapped description list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:53:00.193) - MainThread (215652):
+Braille regions text: ['h2 Wrapped description list ']
+
+IO - inputCore.InputManager.executeGesture (07:53:01.196) - RF Test Spy Thread (119200):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:53:01.214) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', 'Alpha wrapped']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:53:01.214) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'Alpha wrapped  ', IndexCommand(43)]
+
+IO - inputCore.InputManager.executeGesture (07:53:02.361) - RF Test Spy Thread (119200):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:53:02.413) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '• Last nested wrapped item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:53:02.414) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'bullet  Last nested wrapped item  ', IndexCommand(44)]
+
+IO - inputCore.InputManager.executeGesture (07:53:08.549) - RF Test Spy Thread (119200):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:53:08.563) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'Wrapped description list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:53:08.596) - MainThread (215652):
+Braille regions text: ['h2 Wrapped description list ']
+
+IO - inputCore.InputManager.executeGesture (07:53:09.590) - RF Test Spy Thread (119200):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:53:09.615) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', 'Alpha wrapped']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:53:09.615) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'Alpha wrapped  ', IndexCommand(46)]
+
+IO - inputCore.InputManager.executeGesture (07:53:10.724) - RF Test Spy Thread (119200):
+Input: kb(desktop):l
+
+IO - speech.speech.speak (07:53:10.749) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '• Last nested wrapped item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:53:10.749) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'bullet  Last nested wrapped item  ', IndexCommand(47)]
+
+IO - inputCore.InputManager.executeGesture (07:53:11.888) - RF Test Spy Thread (119200):
+Input: kb(desktop):shift+l
+
+IO - speech.speech.speak (07:53:11.907) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'Alpha wrapped']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:53:11.908) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'Alpha wrapped  ', IndexCommand(48)]
+
+IO - inputCore.InputManager.executeGesture (07:53:12.943) - RF Test Spy Thread (119200):
+Input: kb(desktop):,
+
+IO - speech.speech.speak (07:53:13.000) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '• Last nested wrapped item']
+
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (07:53:13.000) - MainThread (215652):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'bullet  Last nested wrapped item  ', IndexCommand(49)]
+
+IO - inputCore.InputManager.executeGesture (07:53:19.106) - RF Test Spy Thread (119200):
+Input: kb(desktop):shift+2
+
+IO - speech.speech.speak (07:53:19.121) - MainThread (215652):
+Speaking [LangChangeCommand ('en'), 'Wrapped description list', 'heading', 'level 2']
+
+IO - braille.buffers.BrailleBuffer.update (07:53:19.152) - MainThread (215652):
+Braille regions text: ['h2 Wrapped description list ']

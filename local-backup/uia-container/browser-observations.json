@@ -1,0 +1,294 @@
+{
+  "date": "2026-10-05",
+  "fixtureSha256": "61e764a16e0f04a05eb5fff42889a72277f79297d75551345527a7eb0a26aa31",
+  "runs": {
+    "official": {
+      "commit": "c22a509337c0b94ac5459ab2a749eeeb9cb06116",
+      "directory": "baseline-system-05",
+      "backends": {
+        "ia2": {
+          "routes": 8,
+          "passed": 8,
+          "failed": 0,
+          "rawLogSha256": "966813b67fb0e19589cc49afa7cc826f1a670c685fca3f0f3ecf067a1951c3a6",
+          "repeatedBrailleTypeErrors": 0,
+          "observations": [
+            {
+              "case": "unordered direct",
+              "entrySpeech": "list  with 1 item  bullet  Alpha unordered",
+              "commaSpeech": "After unordered list  button",
+              "commaBraille": "btn After unordered list",
+              "expected": "After unordered list"
+            },
+            {
+              "case": "unordered nested round trip",
+              "entrySpeech": "list  with 1 item  bullet  Alpha unordered",
+              "returnSpeech": "bullet  Alpha unordered",
+              "commaSpeech": "After unordered list  button",
+              "commaBraille": "btn After unordered list",
+              "expected": "After unordered list"
+            },
+            {
+              "case": "ordered direct",
+              "entrySpeech": "list  with 1 item  1. Alpha ordered",
+              "commaSpeech": "After ordered list  button",
+              "commaBraille": "btn After ordered list",
+              "expected": "After ordered list"
+            },
+            {
+              "case": "ordered nested round trip",
+              "entrySpeech": "list  with 1 item  1. Alpha ordered",
+              "returnSpeech": "1. Alpha ordered",
+              "commaSpeech": "After ordered list  button",
+              "commaBraille": "btn After ordered list",
+              "expected": "After ordered list"
+            },
+            {
+              "case": "description direct",
+              "entrySpeech": "list  with 2 items  Alpha description",
+              "commaSpeech": "After description list  button",
+              "commaBraille": "btn After description list",
+              "expected": "After description list"
+            },
+            {
+              "case": "description nested round trip",
+              "entrySpeech": "list  with 2 items  Alpha description",
+              "returnSpeech": "Alpha description",
+              "commaSpeech": "After description list  button",
+              "commaBraille": "btn After description list",
+              "expected": "After description list"
+            },
+            {
+              "case": "wrapped direct",
+              "entrySpeech": "list  with 2 items  Alpha wrapped",
+              "commaSpeech": "After wrapped list  button",
+              "commaBraille": "btn After wrapped list",
+              "expected": "After wrapped list"
+            },
+            {
+              "case": "wrapped nested round trip",
+              "entrySpeech": "list  with 2 items  Alpha wrapped",
+              "returnSpeech": "Alpha wrapped",
+              "commaSpeech": "After wrapped list  button",
+              "commaBraille": "btn After wrapped list",
+              "expected": "After wrapped list"
+            }
+          ]
+        },
+        "uia": {
+          "routes": 8,
+          "passed": 0,
+          "failed": 8,
+          "rawLogSha256": "d221e5f07e2a213b27e9ab113bc517f0b82ed8c9023d9a9d0f37b77e5e7d7ad7",
+          "repeatedBrailleTypeErrors": 24,
+          "observations": [
+            {
+              "case": "unordered direct",
+              "entrySpeech": "list  with 1 item  bullet  Alpha unordered",
+              "commaSpeech": "list  with 1 item  white bullet  Last nested unordered item",
+              "commaBraille": "h2 Unordered list",
+              "expected": "After unordered list"
+            },
+            {
+              "case": "unordered nested round trip",
+              "entrySpeech": "list  with 1 item  bullet  Alpha unordered",
+              "returnSpeech": "bullet  Alpha unordered",
+              "commaSpeech": "list  with 1 item  white bullet  Last nested unordered item",
+              "commaBraille": "h2 Unordered list",
+              "expected": "After unordered list"
+            },
+            {
+              "case": "ordered direct",
+              "entrySpeech": "list  with 1 item  1. Alpha ordered",
+              "commaSpeech": "list  with 1 item  white bullet  Last nested ordered item",
+              "commaBraille": "h2 Ordered list",
+              "expected": "After ordered list"
+            },
+            {
+              "case": "ordered nested round trip",
+              "entrySpeech": "list  with 1 item  1. Alpha ordered",
+              "returnSpeech": "1. Alpha ordered",
+              "commaSpeech": "list  with 1 item  white bullet  Last nested ordered item",
+              "commaBraille": "h2 Ordered list",
+              "expected": "After ordered list"
+            },
+            {
+              "case": "description direct",
+              "entrySpeech": "list  with 1 item  Alpha description",
+              "commaSpeech": "list  with 1 item  bullet  Last nested description item",
+              "commaBraille": "h2 Description list",
+              "expected": "After description list"
+            },
+            {
+              "case": "description nested round trip",
+              "entrySpeech": "list  with 1 item  Alpha description",
+              "returnSpeech": "Alpha description",
+              "commaSpeech": "list  with 1 item  bullet  Last nested description item",
+              "commaBraille": "h2 Description list",
+              "expected": "After description list"
+            },
+            {
+              "case": "wrapped direct",
+              "entrySpeech": "list  with 1 item  Alpha wrapped",
+              "commaSpeech": "list  with 1 item  bullet  Last nested wrapped item",
+              "commaBraille": "h2 Wrapped description list",
+              "expected": "After wrapped list"
+            },
+            {
+              "case": "wrapped nested round trip",
+              "entrySpeech": "list  with 1 item  Alpha wrapped",
+              "returnSpeech": "Alpha wrapped",
+              "commaSpeech": "list  with 1 item  bullet  Last nested wrapped item",
+              "commaBraille": "h2 Wrapped description list",
+              "expected": "After wrapped list"
+            }
+          ]
+        }
+      }
+    },
+    "candidate": {
+      "commit": "ae1594bced4d2ce60dcaa7d1fd975d9f019bb2b8",
+      "directory": "candidate-system-03",
+      "backends": {
+        "ia2": {
+          "routes": 8,
+          "passed": 8,
+          "failed": 0,
+          "rawLogSha256": "0cb7f28e3467db0f6b244550c0e89634b312d953383bc5ae52c7797c0f058336",
+          "repeatedBrailleTypeErrors": 0,
+          "observations": [
+            {
+              "case": "unordered direct",
+              "entrySpeech": "list  with 1 item  bullet  Alpha unordered",
+              "commaSpeech": "After unordered list  button",
+              "commaBraille": "btn After unordered list",
+              "expected": "After unordered list"
+            },
+            {
+              "case": "unordered nested round trip",
+              "entrySpeech": "list  with 1 item  bullet  Alpha unordered",
+              "returnSpeech": "bullet  Alpha unordered",
+              "commaSpeech": "After unordered list  button",
+              "commaBraille": "btn After unordered list",
+              "expected": "After unordered list"
+            },
+            {
+              "case": "ordered direct",
+              "entrySpeech": "list  with 1 item  1. Alpha ordered",
+              "commaSpeech": "After ordered list  button",
+              "commaBraille": "btn After ordered list",
+              "expected": "After ordered list"
+            },
+            {
+              "case": "ordered nested round trip",
+              "entrySpeech": "list  with 1 item  1. Alpha ordered",
+              "returnSpeech": "1. Alpha ordered",
+              "commaSpeech": "After ordered list  button",
+              "commaBraille": "btn After ordered list",
+              "expected": "After ordered list"
+            },
+            {
+              "case": "description direct",
+              "entrySpeech": "list  with 2 items  Alpha description",
+              "commaSpeech": "After description list  button",
+              "commaBraille": "btn After description list",
+              "expected": "After description list"
+            },
+            {
+              "case": "description nested round trip",
+              "entrySpeech": "list  with 2 items  Alpha description",
+              "returnSpeech": "Alpha description",
+              "commaSpeech": "After description list  button",
+              "commaBraille": "btn After description list",
+              "expected": "After description list"
+            },
+            {
+              "case": "wrapped direct",
+              "entrySpeech": "list  with 2 items  Alpha wrapped",
+              "commaSpeech": "After wrapped list  button",
+              "commaBraille": "btn After wrapped list",
+              "expected": "After wrapped list"
+            },
+            {
+              "case": "wrapped nested round trip",
+              "entrySpeech": "list  with 2 items  Alpha wrapped",
+              "returnSpeech": "Alpha wrapped",
+              "commaSpeech": "After wrapped list  button",
+              "commaBraille": "btn After wrapped list",
+              "expected": "After wrapped list"
+            }
+          ]
+        },
+        "uia": {
+          "routes": 8,
+          "passed": 8,
+          "failed": 0,
+          "rawLogSha256": "525071ff27d4b53153b03e03cb152fe72d91037ce73772412d47eb36c3d8e932",
+          "repeatedBrailleTypeErrors": 16,
+          "observations": [
+            {
+              "case": "unordered direct",
+              "entrySpeech": "list  with 1 item  bullet  Alpha unordered",
+              "commaSpeech": "After unordered list  button",
+              "commaBraille": "btn After unordered list",
+              "expected": "After unordered list"
+            },
+            {
+              "case": "unordered nested round trip",
+              "entrySpeech": "list  with 1 item  bullet  Alpha unordered",
+              "returnSpeech": "bullet  Alpha unordered",
+              "commaSpeech": "After unordered list  button",
+              "commaBraille": "btn After unordered list",
+              "expected": "After unordered list"
+            },
+            {
+              "case": "ordered direct",
+              "entrySpeech": "list  with 1 item  1. Alpha ordered",
+              "commaSpeech": "After ordered list  button",
+              "commaBraille": "btn After ordered list",
+              "expected": "After ordered list"
+            },
+            {
+              "case": "ordered nested round trip",
+              "entrySpeech": "list  with 1 item  1. Alpha ordered",
+              "returnSpeech": "1. Alpha ordered",
+              "commaSpeech": "After ordered list  button",
+              "commaBraille": "btn After ordered list",
+              "expected": "After ordered list"
+            },
+            {
+              "case": "description direct",
+              "entrySpeech": "list  with 1 item  Alpha description",
+              "commaSpeech": "After description list  button",
+              "commaBraille": "btn After description list",
+              "expected": "After description list"
+            },
+            {
+              "case": "description nested round trip",
+              "entrySpeech": "list  with 1 item  Alpha description",
+              "returnSpeech": "Alpha description",
+              "commaSpeech": "After description list  button",
+              "commaBraille": "btn After description list",
+              "expected": "After description list"
+            },
+            {
+              "case": "wrapped direct",
+              "entrySpeech": "list  with 1 item  Alpha wrapped",
+              "commaSpeech": "After wrapped list  button",
+              "commaBraille": "btn After wrapped list",
+              "expected": "After wrapped list"
+            },
+            {
+              "case": "wrapped nested round trip",
+              "entrySpeech": "list  with 1 item  Alpha wrapped",
+              "returnSpeech": "Alpha wrapped",
+              "commaSpeech": "After wrapped list  button",
+              "commaBraille": "btn After wrapped list",
+              "expected": "After wrapped list"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

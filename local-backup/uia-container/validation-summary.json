@@ -1,6 +1,6 @@
 {
   "date": "2026-10-05",
-  "status": "candidate; real browser baseline/candidate comparison blocked by locked Windows session",
+  "status": "verified real-browser A/B; issue-form draft ready for human review and submission",
   "officialBaseCommit": "c22a509337c0b94ac5459ab2a749eeeb9cb06116",
   "officialSourceVersion": "2027.1.0dev",
   "officialSourceBuild": "passed before production edits; pinned submodules and separate locked environment",
@@ -22,17 +22,36 @@
   "ty": "passed",
   "translationCommentCheck": "passed: 0 errors; 55 expected errors in existing source",
   "candidateChangelogMarkdownLint": "passed",
-  "preparedRobotSuites": "model parsing passed; not executed",
-  "runnerSafetyMockTests": "locked-session launch guard and restoration on simulated error passed; no process launched",
+  "preparedRobotSuites": "model parsing and candidate execution passed",
+  "windowActivationSafetyTests": { "run": 7, "failures": 0, "errors": 0 },
+  "evidencePrivacyTests": { "run": 6, "failures": 0, "errors": 0 },
+  "runnerRecovery": "ShellExecuteEx for UIAccess, window-event readiness, --check-running=0 after definitive runs; exact-profile Chrome cleanup",
   "htmlPreview": "integrated browser: light/dark, 360px narrow viewport, no horizontal overflow, no script or external resources",
-  "pristineNvdaChromeKeyboardRun": "NOT RUN: Windows session locked",
-  "candidateNvdaChromeKeyboardRun": "NOT RUN: Windows session locked",
+  "pristineNvdaChromeKeyboardRun": {
+    "directory": "baseline-system-05",
+    "officialProductionSourceUnchanged": true,
+    "identicalFinalHarnessToCandidate": true,
+    "ia2": { "routes": 8, "passed": 8, "failed": 0 },
+    "uia": { "routes": 8, "passed": 0, "expectedNavigationFailures": 8 },
+    "repeatedCompleteRun": "baseline-system-04: same outcome"
+  },
+  "candidateNvdaChromeKeyboardRun": {
+    "directory": "candidate-system-03",
+    "ia2": { "routes": 8, "passed": 8, "failed": 0 },
+    "uia": { "routes": 8, "passed": 8, "failed": 0 }
+  },
+  "candidateChromeListSuite": { "directory": "candidate-chrome-list-01", "run": 6, "passed": 6, "failed": 0 },
+  "interruptedAttempts": "Not treated as functional results: first-start timeout, preview-title collision, foreground interference and a transient remote-spy StreamRedirector error. Final official/candidate and chrome_list runs completed.",
+  "separateBrailleException": "Official getPropertiesBraille concatenates childControlCount integer to str: 24 log occurrences in official UIA and 16 in candidate UIA while entering lists. Not changed by this fix; candidate following-button speech and braille pass.",
+  "realProviderCoverageLimits": "Dedicated blank-line, EOF, say-all, CRLF and line-wrapping matrix not run; controlled unit coverage retained. Edge and Firefox not validated.",
+  "freshLogAttachments": "Reviewed verbatim excerpts for official and candidate runs, with raw log hashes; full personal session logs remain local",
   "installedNvda2026_2BugTest": "NOT RUN: version measured only",
   "rebootPerformed": false,
   "addonsDisabledRestartPerformed": false,
   "accessibilityRepairToolRun": false,
   "issueOpened": false,
   "pullRequestOpened": false,
+  "sourceWorktreeAtHandoff": "fix/chromium-uia-container-end at ae1594bced4d2ce60dcaa7d1fd975d9f019bb2b8",
   "officialX64RemoteDllSha256": "9E057EB53DDDFE36BAB18561A2F197300E69024BCE42FBF78666799B7B22BA39",
   "officialX86RemoteDllSha256": "53987CAD51F23D67EC0311A3128D28BDA28408DBCFC2AFA1F6BB1E7FB358250E"
 }

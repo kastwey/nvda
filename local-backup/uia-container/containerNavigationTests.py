@@ -1,15 +1,16 @@
 """External reproduction against an otherwise unmodified NVDA checkout."""
 
 import json
-from pathlib import Path
 import re
+from pathlib import Path
 from unittest.mock import patch
 
-from robot.libraries.BuiltIn import BuiltIn
-from ChromeLib import ChromeLib
 import NvdaLib
-from SystemTestSpy import _getLib
 import WindowsLib
+from ChromeLib import ChromeLib
+from chromeWindow import focusChromeWindow
+from robot.libraries.BuiltIn import BuiltIn
+from SystemTestSpy import _getLib
 
 
 def test_container_navigation(useUIA: bool) -> None:
@@ -20,24 +21,48 @@ def test_container_navigation(useUIA: bool) -> None:
 	spy.setBrailleCellCount(200)
 	chrome: ChromeLib = _getLib("ChromeLib")
 	fixture = Path(__file__).with_name("container-navigation.html")
-	titlePattern = re.compile(r"^NVDA container navigation reproduction")
+	titlePattern = re.compile(r"^NVDA container navigation reproduction(?: - .+)? - Google Chrome$")
 	# Adapt only the external browser-launch helper's title matcher. The fixture is
 	# opened directly, and no NVDA production methods or text ranges are replaced.
 	with patch.object(ChromeLib, "getUniqueTestCaseTitleRegex", return_value=titlePattern):
 		window = chrome.start_chrome(str(fixture), "container navigation")
-	if not WindowsLib.isWindowInForeground(window):
-		WindowsLib.taskSwitchToItemMatching(titlePattern)
-	NvdaLib.getSpeechAfterKey("alt+d")
-	NvdaLib.getSpeechAfterKey("control+f6")
-	startSpeech = NvdaLib.getSpeechAfterKey("control+home")
+
+	def ensureForeground() -> None:
+		"""Never send a test key to an unrelated application."""
+		if not WindowsLib.isWindowInForeground(window):
+			focusChromeWindow(window.hwndVal)
+		builtIn.should_be_true(WindowsLib.isWindowInForeground(window), "Test Chrome lost foreground")
+
+	def getSpeech(key: str) -> str:
+		ensureForeground()
+		return NvdaLib.getSpeechAfterKey(key)
+
+	def getSpeechAndBraille(key: str) -> tuple[str, str]:
+		ensureForeground()
+		return NvdaLib.getSpeechAndBrailleAfterKey(key)
+
+	addressSpeech = getSpeech("alt+d")
+	builtIn.should_contain(addressSpeech, "Address and search bar")
+	getSpeech("control+f6")
+	startSpeech = getSpeech("control+home")
 	builtIn.should_contain(startSpeech, "NVDA container navigation reproduction")
 	results: list[dict[str, str]] = []
+	backend = "uia" if useUIA else "ia2"
+	outputDir = Path(builtIn.get_variable_value("${OUTPUT DIR}"))
+
+	def record(result: dict[str, str]) -> None:
+		"""Preserve completed measurements even if a later step is interrupted."""
+		results.append(result)
+		outputDir.joinpath(f"{backend}-observations.json").write_text(
+			json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8"
+		)
+
 	for case in ("unordered", "ordered", "description", "wrapped"):
-		NvdaLib.getSpeechAfterKey("2")
-		entrySpeech = NvdaLib.getSpeechAfterKey("l")
+		getSpeech("2")
+		entrySpeech = getSpeech("l")
 		builtIn.should_contain(entrySpeech, f"Alpha {case}")
-		directSpeech, directBraille = NvdaLib.getSpeechAndBrailleAfterKey(",")
-		results.append(
+		directSpeech, directBraille = getSpeechAndBraille(",")
+		record(
 			{
 				"case": f"{case} direct",
 				"entrySpeech": entrySpeech,
@@ -47,14 +72,14 @@ def test_container_navigation(useUIA: bool) -> None:
 			},
 		)
 		# Also exercise returning from the inner list to its enclosing list.
-		NvdaLib.getSpeechAfterKey("shift+2")
-		NvdaLib.getSpeechAfterKey("l")
-		innerSpeech = NvdaLib.getSpeechAfterKey("l")
+		getSpeech("shift+2")
+		getSpeech("l")
+		innerSpeech = getSpeech("l")
 		builtIn.should_contain(innerSpeech, f"Last nested {case} item")
-		returnSpeech = NvdaLib.getSpeechAfterKey("shift+l")
+		returnSpeech = getSpeech("shift+l")
 		builtIn.should_contain(returnSpeech, f"Alpha {case}")
-		speech, braille = NvdaLib.getSpeechAndBrailleAfterKey(",")
-		results.append(
+		speech, braille = getSpeechAndBraille(",")
+		record(
 			{
 				"case": f"{case} nested round trip",
 				"entrySpeech": entrySpeech,
@@ -66,12 +91,7 @@ def test_container_navigation(useUIA: bool) -> None:
 		)
 		# Restart from the current example's heading. This is independent of
 		# whether comma reached the button or remained in the final nested list.
-		NvdaLib.getSpeechAfterKey("shift+2")
-	backend = "uia" if useUIA else "ia2"
-	outputDir = Path(builtIn.get_variable_value("${OUTPUT DIR}"))
-	outputDir.joinpath(f"{backend}-observations.json").write_text(
-		json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8"
-	)
+		getSpeech("shift+2")
 	failures = [
 		f"{result['case']}: speech={result['commaSpeech']!r}; braille={result['commaBraille']!r}"
 		for result in results

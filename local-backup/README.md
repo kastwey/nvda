@@ -56,7 +56,14 @@ The candidate code is on `fix/chromium-uia-container-end`, commit
 `c22a509337c0b94ac5459ab2a749eeeb9cb06116`, not on this recovery branch.
 
 The official source build and all 1,481 candidate unit tests (five skips) succeeded.
-The real clean-build/candidate browser comparison is still pending: Windows was locked,
-and the lock screen was not bypassed. The issue-form draft clearly preserves this limitation.
-No issue or PR has been opened. Only a narrowly selected earlier log excerpt is included;
-full private NVDA/Robot logs are not published.
+The real clean-build/candidate browser comparison is now complete with Windows unlocked:
+the unchanged official source passes all eight IA2 routes and fails all eight UIA routes;
+the candidate passes all eight routes with each API, in speech and braille at the following button.
+All six repository `chrome_list` tests pass with the candidate.
+
+The updated issue-form draft includes all 14 fields and truthful troubleshooting selections.
+Fresh official/candidate log excerpts, all 32 observed routes, the standalone HTML and the
+verified attachment ZIP are included. Only narrowly selected log records are published;
+full private NVDA/Robot logs remain local.
+The separate official UIA list-count/braille TypeError is disclosed and is not fixed by the candidate.
+No issue or PR has been opened, and the installed reader was restored and checked after the tests.
