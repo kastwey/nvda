@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>NVDA isolated accessible-name probe 3858</title>
+</head>
+<body>
+	<h1>Description-list accessible names</h1>
+	<dl>
+		<dt id="plain-term">Plain term</dt>
+		<dd id="plain-definition">Plain definition</dd>
+		<dt id="label-term" aria-label="Accessible term">Visible term</dt>
+		<dd id="label-definition" aria-label="Accessible definition">Visible definition</dd>
+		<dt id="same-term" aria-label="Same term">Same term</dt>
+		<dd id="same-definition" aria-label="Same definition">Same definition</dd>
+		<dt id="labelledby-term" aria-labelledby="external-term-label">Short term</dt>
+		<dd id="labelledby-definition" aria-labelledby="external-definition-label">Short definition</dd>
+	</dl>
+	<span hidden id="external-term-label">External term label</span>
+	<span hidden id="external-definition-label">External definition label</span>
+	<p><span id="aria-term" role="term" aria-label="Explicit ARIA term label">Explicit term content</span></p>
+	<p><span id="aria-definition" role="definition" aria-label="Explicit ARIA definition label">Explicit definition content</span></p>
+	<p id="probe-ready">End of accessible-name probe</p>
+</body>
+</html>

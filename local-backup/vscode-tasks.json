@@ -1,0 +1,35 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build NVDA source",
+			"type": "shell",
+			"command": "C:\\Users\\Juanjo\\AppData\\Local\\Microsoft\\WinGet\\Links\\uv.exe",
+			"args": [
+				"run",
+				"--no-sync",
+				"SCons",
+				"-j4",
+				"source"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Build NVDA native runtime",
+			"type": "shell",
+			"command": "C:\\Users\\Juanjo\\AppData\\Local\\Microsoft\\WinGet\\Links\\uv.exe",
+			"args": [
+				"run",
+				"--no-sync",
+				"SCons",
+				"-j4",
+				"source/lib"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}
