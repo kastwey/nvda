@@ -1,0 +1,32 @@
+EXCERPT, NOT A NEW OR PRISTINE-BUILD REPRODUCTION LOG
+
+Recorded on 2026-10-05 in the description-list feature worktree, before the
+independent container-boundary candidate. Chrome 154.0.8037.97, UIA backend.
+Startup version line:
+Starting NVDA version source-description-lists-3858-c43cf6c AMD64
+
+Only the directly relevant keyboard/speech/braille records are reproduced below.
+Unrelated startup, configuration, window titles, and session output are omitted.
+The full local log has been retained privately. This is not evidence that the
+new standalone attachment has been tested with the clean official build.
+
+IO - inputCore.InputManager.executeGesture (00:49:02.240) - RF Test Spy Thread (269912):
+Input: kb(desktop):shift+l
+IO - speech.speech.speak (00:49:02.262) - MainThread (210132):
+Speaking [LangChangeCommand ('en'), 'Alpha', 'term', 'with 2 definitions']
+IO - braille.buffers.BrailleBuffer.update (00:49:02.299) - MainThread (210132):
+Braille regions text: ['dlst2 trm 2 defs Alpha ']
+
+DEBUG - external:globalPlugins.speechSpyGlobalPlugin.NVDASpyLib.emulateKeyPress (00:49:03.340) - RF Test Spy Thread (269912):
+Sending gesture ,
+IO - inputCore.InputManager.executeGesture (00:49:03.341) - RF Test Spy Thread (269912):
+Input: kb(desktop):,
+IO - speech.speech.speak (00:49:03.402) - MainThread (210132):
+Speaking [LangChangeCommand ('en'), 'list', 'with 1 item', '• Ordinary item', 'definition']
+DEBUG - external:synthDrivers.speechSpySynthDriver.SpeechSpySynthDriver.speak (00:49:03.403) - MainThread (210132):
+Sequence: [LangChangeCommand ('en'), 'list  ', 'with 1 item  ', 'bullet  Ordinary item  ', 'definition  ', IndexCommand(26)]
+IO - braille.buffers.BrailleBuffer.update (00:49:03.425) - MainThread (210132):
+Braille regions text: ['definition lst1 • Ordinary item lst end dlst end']
+
+Corresponding Robot failure, verbatim:
+speech Actual != Expected: 'list  with 1 item  bullet  Ordinary item  definition' does not contain 'Toggle definition'

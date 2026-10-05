@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>NVDA container navigation reproduction</title>
+	<style>
+		:root { color-scheme: light dark; }
+		body { font: 1.1rem/1.6 system-ui, sans-serif; max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+		button { font: inherit; padding: .4rem .8rem; }
+		h2 { margin-top: 2.5rem; }
+		:focus-visible { outline: 3px solid Highlight; outline-offset: 3px; }
+	</style>
+</head>
+<body>
+	<h1>NVDA container navigation reproduction</h1>
+	<p>In Chrome with NVDA in browse mode, press Control+Home, then 2 to reach the first example heading.
+	Press L to enter its outer list, then comma to move past that list.
+	The expected destination is the button immediately after the outer list, not its last nested item.</p>
+	<p>For the UI Automation case, set “Use UI Automation to access Microsoft Edge and other Chromium based browsers”
+	to “Yes” in NVDA’s Advanced settings and restart Chrome. Repeat with “No” as a comparison.
+	No Internet connection, extension or script is required by this page.</p>
+
+	<h2>Unordered list</h2>
+	<ul id="unordered">
+		<li>Alpha unordered
+			<ul><li>Last nested unordered item</li></ul>
+		</li>
+	</ul>
+	<button type="button">After unordered list</button>
+
+	<h2>Ordered list</h2>
+	<ol id="ordered">
+		<li>Alpha ordered
+			<ul><li>Last nested ordered item</li></ul>
+		</li>
+	</ol>
+	<button type="button">After ordered list</button>
+
+	<h2>Description list</h2>
+	<dl id="description">
+		<dt>Alpha description</dt>
+		<dd>Definition
+			<ul><li>Last nested description item</li></ul>
+		</dd>
+	</dl>
+	<button type="button">After description list</button>
+
+	<h2>Wrapped description list</h2>
+	<dl id="wrapped">
+		<div>
+			<dt>Alpha wrapped</dt>
+			<dd>Definition
+				<ul><li>Last nested wrapped item</li></ul>
+			</dd>
+		</div>
+	</dl>
+	<button type="button">After wrapped list</button>
+</body>
+</html>
