@@ -46,6 +46,34 @@ i7562
 	[Documentation]	List should not be announced on every line of a ul in a contenteditable
 	[Tags]	chrome_list
 	test_i7562
+Definition list semantics
+	[Documentation]	Definition lists expose terms, definitions, and a semantic item count.
+	[Tags]	chrome_list
+	test_definitionList_semantics
+Definition list counts without wrappers
+	[Documentation]	Terms share definition counts, independently of paragraphs and nested lists; DOM updates refresh them.
+	[Tags]	chrome_list
+	test_definitionList_counts	${False}
+Definition list counts with wrappers
+	[Documentation]	Div-wrapped groups preserve counts on both terms after adding or removing definitions.
+	[Tags]	chrome_list
+	test_definitionList_counts	${True}
+Definition list counts UIA without wrappers
+	[Documentation]	Chromium UIA reports shared definition counts and refreshes them after DOM updates.
+	[Tags]	chrome_list
+	test_definitionList_counts	${False}	${True}
+Definition list counts UIA with wrappers
+	[Documentation]	Chromium UIA reports counts for div-wrapped groups and independent nested lists.
+	[Tags]	chrome_list
+	test_definitionList_counts	${True}	${True}
+Definition list accessible names IA2
+	[Documentation]	Distinct labels survive; duplicate names are suppressed, including after DOM updates.
+	[Tags]	chrome_list	chrome_descriptionList_names
+	test_definitionList_names	${False}
+Definition list accessible names UIA
+	[Documentation]	UIA preserves labels and suppresses only names matching the complete element text.
+	[Tags]	chrome_list	chrome_descriptionList_names
+	test_definitionList_names	${True}
 pr11606
 	[Documentation]	Announce the correct line when placed at the end of a link at the end of a list item in a contenteditable
 	[Tags]	chrome_list

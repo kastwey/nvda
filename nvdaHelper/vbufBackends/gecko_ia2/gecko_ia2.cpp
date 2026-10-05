@@ -1,7 +1,7 @@
 /*
 This file is a part of the NVDA project.
 URL: http://www.nvda-project.org/
-Copyright 2007-2023 NV Access Limited, Mozilla Corporation
+Copyright 2007-2026 NV Access Limited, Mozilla Corporation
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 2.0, as published by
     the Free Software Foundation.
@@ -1331,6 +1331,16 @@ VBufStorage_fieldNode_t* GeckoVBufBackend_t::fillVBuf(
 	//If the name isn't being rendered as the content, then add the name as a field attribute.
 	if (!nameIsContent && name) {
 		parentNode->addAttribute(L"name", name);
+		// Compare against the fully rendered node, not a clipped reading range.
+		// Python only suppresses this duplicate for normalized terms and definitions;
+		// explicit role overrides keep their existing name handling.
+		if (auto tag = IA2AttribsMap.find(L"tag");
+			tag != IA2AttribsMap.end()
+			&& (tag->second == L"dt" || tag->second == L"dd")
+			&& nodeContentMatchesString(parentNode, name)
+		) {
+			parentNode->addAttribute(L"nameIsDuplicate", L"true");
+		}
 		// Determine whether this node is labelled by its content. We only need to do
 		// this if the node has a name and the name is explicit, since this is what
 		// browsers expose in this case.
@@ -1369,6 +1379,13 @@ VBufStorage_fieldNode_t* GeckoVBufBackend_t::fillVBuf(
 		smartPacc,
 		*parentNode
 	);
+
+	if (
+		auto tag = IA2AttribsMap.find(L"tag");
+		tag != IA2AttribsMap.end() && tag->second == L"dl" && role == ROLE_SYSTEM_LIST
+	) {
+		fillDescriptionListCounts(parentNode, L"IAccessible2::attribute_tag", L"dt", L"dd", L"div");
+	}
 
 	// Clean up.
 	if(name)

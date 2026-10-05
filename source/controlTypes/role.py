@@ -1,7 +1,7 @@
 # A part of NonVisual Desktop Access (NVDA)
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
-# Copyright (C) 2007-2022 NV Access Limited, Babbage B.V.
+# Copyright (C) 2007-2026 NV Access Limited, Babbage B.V.
 
 from enum import (
 	unique,
@@ -202,6 +202,8 @@ class Role(DisplayStringIntEnum):
 	SUGGESTION = 156
 	DEFINITION = 157
 	SWITCH = 158
+	TERM = 159
+	DESCRIPTIONLIST = 160
 
 
 _roleLabels: dict[Role, str] = {
@@ -235,6 +237,8 @@ _roleLabels: dict[Role, str] = {
 	Role.COMBOBOX: _("combo box"),
 	# Translators: The word used for lists such as folder list.
 	Role.LIST: _("list"),
+	# Translators: The role of an HTML description list (dl), containing names and associated descriptions or values.
+	Role.DESCRIPTIONLIST: _("description list"),
 	# Translators: Used to identify a list item such as email list items.
 	Role.LISTITEM: _("list item"),
 	# Translators: The word used to identify graphics such as webpage graphics.
@@ -532,6 +536,8 @@ _roleLabels: dict[Role, str] = {
 	# Translators: The word role for a switch control
 	# I.e. a control that can be switched on or off.
 	Role.SWITCH: _("switch"),
+	# Translators: Identifies a term in a description list.
+	Role.TERM: _("term"),
 }
 
 

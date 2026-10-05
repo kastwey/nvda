@@ -128,8 +128,24 @@ class Gecko_ia2_TextInfo(VirtualBufferTextInfo):
 			attrs["placeholder"] = placeholder
 
 		role = IAccessibleHandler.NVDARoleFromAttr(attrs["IAccessible::role"])
-		if attrs.get("IAccessible2::attribute_tag", "").lower() == "blockquote":
+		htmlTag = attrs.get("IAccessible2::attribute_tag", "").lower()
+		xmlRoles = attrs.get("IAccessible2::attribute_xml-roles", "").split() or [""]
+		primaryXmlRole = next((xmlRole for xmlRole in xmlRoles if xmlRole in aria.ariaRolesToNVDARoles), None)
+		if htmlTag == "blockquote":
 			role = controlTypes.Role.BLOCKQUOTE
+		elif htmlTag == "dl" and primaryXmlRole is None and role == controlTypes.Role.LIST:
+			role = controlTypes.Role.DESCRIPTIONLIST
+		elif htmlTag == "dt" and primaryXmlRole in (None, "term"):
+			role = controlTypes.Role.TERM
+		elif htmlTag == "dd" and primaryXmlRole in (None, "description", "definition"):
+			role = controlTypes.Role.DEFINITION
+		nameIsDuplicate = attrs.pop("nameIsDuplicate", None) == "true"
+		if role in (controlTypes.Role.TERM, controlTypes.Role.DEFINITION) and nameIsDuplicate:
+			attrs.pop("name", None)
+			attrs.pop("alwaysReportName", None)
+		descriptionListGroupCount = attrs.get("description-list-group-count")
+		if role == controlTypes.Role.DESCRIPTIONLIST and descriptionListGroupCount is not None:
+			attrs["_childcontrolcount"] = descriptionListGroupCount
 
 		states = IAccessibleHandler.getStatesSetFromIAccessibleAttrs(attrs)
 		states |= IAccessibleHandler.getStatesSetFromIAccessible2Attrs(attrs)
@@ -176,7 +192,6 @@ class Gecko_ia2_TextInfo(VirtualBufferTextInfo):
 			) is not None:
 				states.add(linkType)
 		level = attrs.get("IAccessible2::attribute_level", "")
-		xmlRoles = attrs.get("IAccessible2::attribute_xml-roles", "").split(" ")
 		landmark = next((xr for xr in xmlRoles if xr in aria.landmarkRoles), None)
 		if landmark and role != controlTypes.Role.LANDMARK and landmark != xmlRoles[0]:
 			# Ignore the landmark role
@@ -448,7 +463,14 @@ class Gecko_ia2(VirtualBuffer):
 		elif nodeType == "list":
 			attrs = {"IAccessible::role": [oleacc.ROLE_SYSTEM_LIST]}
 		elif nodeType == "listItem":
-			attrs = {"IAccessible::role": [oleacc.ROLE_SYSTEM_LISTITEM]}
+			attrs = [
+				{"IAccessible::role": [oleacc.ROLE_SYSTEM_LISTITEM]},
+				{"IAccessible2::attribute_tag": ["dt"], "IAccessible2::attribute_xml-roles": [None]},
+				{
+					"IAccessible::role": [IA2.IA2_ROLE_TEXT_FRAME],
+					"IAccessible2::attribute_xml-roles": [VBufStorage_findMatch_word("term")],
+				},
+			]
 		elif nodeType == "button":
 			attrs = {
 				"IAccessible::role": [

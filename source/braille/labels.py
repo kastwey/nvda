@@ -42,6 +42,8 @@ roleLabels: dict[controlTypes.Role, str] = {
 	# Translators: Displayed in braille for an object which is a
 	# list.
 	controlTypes.Role.LIST: _("lst"),
+	# Translators: Braille abbreviation for a description list (HTML dl).
+	controlTypes.Role.DESCRIPTIONLIST: _("dlst"),
 	# Translators: Displayed in braille for an object which is a
 	# graphic.
 	controlTypes.Role.GRAPHIC: _("gra"),
@@ -163,6 +165,8 @@ roleLabels: dict[controlTypes.Role, str] = {
 	controlTypes.Role.DEFINITION: _("definition"),
 	# Translators: Displayed in braille when an object is a switch control
 	controlTypes.Role.SWITCH: _("swtch"),
+	# Translators: Displayed in braille when an object is a term in a description list.
+	controlTypes.Role.TERM: _("trm"),
 }
 
 positiveStateLabels = {

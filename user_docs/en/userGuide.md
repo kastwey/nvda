@@ -1080,6 +1080,13 @@ To move to the beginning or end of containing elements such as lists and tables:
 
 <!-- KC:endInclude -->
 
+In HTML description lists, `i` and `shift+i` move between terms rather than definitions.
+Use `l` and `shift+l` to move between lists, including description lists.
+When reporting of lists is enabled in Document Formatting settings, NVDA identifies the container as "description list" in speech and "dlst" in braille, and identifies terms and definitions.
+For a term with multiple associated definitions, NVDA also reports their number in speech and braille.
+If several terms share the same definitions, each term reports that shared count.
+Definitions in nested lists are counted separately.
+
 Some web applications such as Gmail, Twitter and Facebook use single letters as shortcut keys.
 If you want to use these while still being able to use your cursor keys to read in browse mode, you can temporarily disable NVDA's single letter navigation keys.
 <!-- KC:beginInclude -->

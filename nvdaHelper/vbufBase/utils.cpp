@@ -1,7 +1,7 @@
 /*
 This file is a part of the NVDA project.
 URL: http://www.nvda-project.org/
-Copyright 2006-2010 NVDA contributers.
+Copyright 2006-2026 NVDA contributers.
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 2.0, as published by
     the Free Software Foundation.
@@ -15,9 +15,63 @@ http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 #include <cwctype>
 #include <string>
 #include <map>
+#include <functional>
+#include <vector>
 #include "utils.h"
 
 using namespace std;
+
+void fillDescriptionListCounts(
+	VBufStorage_controlFieldNode_t* listNode,
+	const wstring& tagAttribute,
+	const wstring& termTag,
+	const wstring& definitionTag,
+	const wstring& wrapperTag
+) {
+	int groupCount = 0;
+	int definitionCount = 0;
+	vector<VBufStorage_controlFieldNode_t*> terms;
+	auto finishGroup = [&]() {
+		if (!terms.empty() && definitionCount > 0) {
+			++groupCount;
+		}
+		for (auto term : terms) {
+			term->addAttribute(L"definition-count", to_wstring(definitionCount));
+		}
+		terms.clear();
+		definitionCount = 0;
+	};
+	function<void(VBufStorage_controlFieldNode_t*, bool)> processChildren;
+	processChildren = [&](VBufStorage_controlFieldNode_t* parent, bool allowWrappers) {
+		for (auto child = parent->getFirstChild(); child; child = child->getNext()) {
+			auto control = dynamic_cast<VBufStorage_controlFieldNode_t*>(child);
+			if (!control) {
+				continue;
+			}
+			// An insertion/removal or role/visibility change can affect sibling terms' counts.
+			control->requiresParentUpdate = true;
+			if (control->isHidden) {
+				continue;
+			}
+			const auto tag = control->getAttribute(tagAttribute);
+			if (tag == termTag) {
+				if (definitionCount > 0) {
+					finishGroup();
+				}
+				terms.push_back(control);
+			} else if (tag == definitionTag) {
+				++definitionCount;
+			} else if (allowWrappers && tag == wrapperTag) {
+				processChildren(control, false);
+			}
+		}
+	};
+	processChildren(listNode, true);
+	finishGroup();
+	listNode->addAttribute(L"description-list-group-count", to_wstring(groupCount));
+	// Otherwise reused reference nodes would hide children or retain stale definition counts.
+	listNode->alwaysRerenderDescendants = true;
+}
 
 wstring getNameForURL(const wstring &url) {
 	if (url.empty())

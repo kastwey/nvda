@@ -1,7 +1,7 @@
 # A part of NonVisual Desktop Access (NVDA)
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
-# Copyright (C) 2006-2022 NV Access Limited
+# Copyright (C) 2006-2026 NV Access Limited
 
 """Base classes with common support for browsers exposing IAccessible2."""
 
@@ -107,6 +107,19 @@ class IA2WebAnnotation(AnnotationOrigin):
 
 class Ia2Web(IAccessible):
 	IAccessibleTableUsesTableCellIndexAttrib = True
+
+	def _get_role(self) -> controlTypes.Role:
+		role = super().role
+		if (
+			role == controlTypes.Role.LIST
+			and self.IA2Attributes.get("tag", "").lower() == "dl"
+			and not any(
+				xmlRole in aria.ariaRolesToNVDARoles
+				for xmlRole in self.IA2Attributes.get("xml-roles", "").split()
+			)
+		):
+			return controlTypes.Role.DESCRIPTIONLIST
+		return role
 
 	def isDescendantOf(self, obj: "NVDAObjects.NVDAObject") -> bool:
 		if obj.windowHandle != self.windowHandle:

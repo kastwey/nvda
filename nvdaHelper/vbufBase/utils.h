@@ -1,7 +1,7 @@
 /*
 This file is a part of the NVDA project.
 URL: http://www.nvda-project.org/
-Copyright 2006-2010 NVDA contributers.
+Copyright 2006-2026 NVDA contributers.
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 2.0, as published by
     the Free Software Foundation.
@@ -65,6 +65,19 @@ bool nodeHasUsefulContent(VBufStorage_fieldNode_t* node);
  * This can happen with links that have a title attribute matching the content.
  */
 bool nodeContentMatchesString(VBufStorage_fieldNode_t* node, const std::wstring& testStr);
+
+/**
+ * Annotate a description list with its complete group count and each term with its definition count.
+ * Only direct children and one level of group wrappers participate; nested lists remain independent.
+ * Call after rendering children. The list and participating children must be re-rendered together.
+ */
+void fillDescriptionListCounts(
+	VBufStorage_controlFieldNode_t* listNode,
+	const std::wstring& tagAttribute,
+	const std::wstring& termTag,
+	const std::wstring& definitionTag,
+	const std::wstring& wrapperTag
+);
 
 inline bool isPrivateCharacter(wchar_t ch) {
 	return (ch>=L'\xe000'&&ch<=L'\xf8ff')||(ch==L'\x200b');

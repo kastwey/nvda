@@ -1,6 +1,6 @@
 # NVDAObjects/MSHTML.py
 # A part of NonVisual Desktop Access (NVDA)
-# Copyright (C) 2006-2025 NV Access Limited, Aleksey Sadovoy
+# Copyright (C) 2006-2026 NV Access Limited, Aleksey Sadovoy
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
 
@@ -130,10 +130,10 @@ nodeNamesToNVDARoles: dict[str, int] = {
 	"FORM": controlTypes.Role.FORM,
 	"UL": controlTypes.Role.LIST,
 	"OL": controlTypes.Role.LIST,
-	"DL": controlTypes.Role.LIST,
+	"DL": controlTypes.Role.DESCRIPTIONLIST,
 	"LI": controlTypes.Role.LISTITEM,
-	"DD": controlTypes.Role.LISTITEM,
-	"DT": controlTypes.Role.LISTITEM,
+	"DD": controlTypes.Role.DEFINITION,
+	"DT": controlTypes.Role.TERM,
 	"TR": controlTypes.Role.TABLEROW,
 	"THEAD": controlTypes.Role.TABLEHEADER,
 	"TBODY": controlTypes.Role.TABLEBODY,
@@ -811,8 +811,16 @@ class MSHTML(IAccessible):
 		return super().basicText
 
 	def _get_role(self):
+		ariaRole = None
 		if self.HTMLNode:
-			ariaRole = (self.HTMLAttributes["role"] or "").split(" ")[0]
+			ariaRole = next(
+				(
+					role
+					for role in (self.HTMLAttributes["role"] or "").split()
+					if role in aria.ariaRolesToNVDARoles
+				),
+				None,
+			)
 			if ariaRole:
 				role = aria.ariaRolesToNVDARoles.get(ariaRole)
 				if role:
@@ -822,6 +830,7 @@ class MSHTML(IAccessible):
 				if nodeName in ("OBJECT", "EMBED", "APPLET"):
 					return controlTypes.Role.EMBEDDEDOBJECT
 				if self.HTMLNodeHasAncestorIAccessible or nodeName in (
+					"DL",
 					"BODY",
 					"FRAMESET",
 					"FRAME",

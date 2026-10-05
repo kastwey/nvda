@@ -884,6 +884,202 @@ def test_i7562():
 	)
 
 
+def test_definitionList_semantics() -> None:
+	"""Definition lists should expose their terms, definitions, and semantic item count."""
+	_chrome.prepareChrome(
+		"""
+			<h1>Description list</h1>
+			<dl>
+				<dt>Student</dt>
+				<dd>Judy</dd>
+				<div>
+					<dt>Staff</dt>
+					<dt>Teacher</dt>
+					<dd>Melissa</dd>
+					<dd>Robin</dd>
+				</div>
+				<div>
+					<dt>Color</dt>
+					<dt>Colour</dt>
+					<dd>A visual characteristic</dd>
+				</div>
+			</dl>
+			<p>After list</p>
+		""",
+	)
+	actualSpeech = [_chrome.getSpeechAfterKey("h")]
+	actualQuickNavSpeech = [_chrome.getSpeechAfterKey("i") for _ in range(5)]
+	_builtIn.should_be_equal(
+		actualQuickNavSpeech,
+		[
+			"description list  with 3 items  Student  term",
+			"Staff  term  with 2 definitions",
+			"Teacher  term  with 2 definitions",
+			"Color  term",
+			"Colour  term",
+		],
+	)
+	actualSpeech = [_chrome.getSpeechAfterKey("shift+h")]
+	for _ in range(10):
+		actualSpeech.append(_chrome.getSpeechAfterKey("downArrow"))
+	_builtIn.should_be_equal(
+		actualSpeech,
+		[
+			"Description list  heading  level 1",
+			"description list  with 3 items  term  Student",
+			"definition  Judy",
+			"term  with 2 definitions  Staff",
+			"term  with 2 definitions  Teacher",
+			"definition  Melissa",
+			"definition  Robin",
+			"term  Color",
+			"term  Colour",
+			"definition  A visual characteristic",
+			"out of description list  After list",
+		],
+	)
+
+
+def test_definitionList_counts(wrapped: bool, useUIA: bool = False) -> None:
+	"""Count shared definitions, not paragraphs/nested definitions, including after DOM updates."""
+	# AllowUiaInChromium.YES / NO: exercise each provider explicitly.
+	_NvdaLib.getSpyLib().set_configValue(["UIA", "allowInChromium"], 2 if useUIA else 3)
+	group = """
+		<dt>Alpha</dt><dt>Alias</dt>
+		<dd><p>First paragraph</p><p>Second paragraph</p></dd>
+		<dd id="additionalDefinition">Another definition
+			<dl><dt>Nested</dt><dd>One</dd><dd>Two</dd><dd>Three</dd></dl>
+		</dd>
+	"""
+	otherGroup = "<dt>Solo</dt><dd>Only definition<ul><li>Ordinary item</li></ul></dd>"
+	if wrapped:
+		group = f'<div id="group">{group}</div>'
+		otherGroup = f"<div>{otherGroup}</div>"
+	_chrome.prepareChrome(f"""
+		<h1>Definition counts</h1>
+		<dl id="list">{group}{otherGroup}</dl>
+		<button onclick="
+			if (!this.definition) {{
+				this.definition = document.getElementById('additionalDefinition');
+				this.parentElementForDefinition = this.definition.parentNode;
+				this.nextElement = this.definition.nextSibling;
+			}}
+			if (this.definition.parentNode) {{ this.definition.remove(); }}
+			else {{ this.parentElementForDefinition.insertBefore(this.definition, this.nextElement); }}
+		">Toggle definition</button>
+	""")
+	_chrome.getSpeechAfterKey("h")
+	# List quick navigation must include both native dl containers and ordinary lists.
+	for key, label, count, content in (
+		("l", "description list", 2, "Alpha"),
+		("l", "description list", 1, "Nested"),
+		("l", "list", 1, "Ordinary item"),
+		("shift+l", "description list", 1, "Nested"),
+	):
+		speech, braille = _NvdaLib.getSpeechAndBrailleAfterKey(key)
+		_asserts.speech_contains(speech, [f"{label}  with {count} item", content])
+		_asserts.braille_contains(braille, [f"{'dlst' if label == 'description list' else 'lst'}{count}"])
+		if label == "list":
+			_builtIn.should_not_contain(speech, "description list  with 1 item")
+			_builtIn.should_not_contain(braille, "dlst1")
+	# The outer list is still a common ancestor, so returning to its start must not
+	# repeat its entry announcement. Braille still includes the list context and count.
+	speech, braille = _NvdaLib.getSpeechAndBrailleAfterKey("shift+l")
+	_asserts.strings_match(speech, "Alpha  term  with 2 definitions")
+	_asserts.braille_contains(braille, ["dlst2", "trm 2 defs", "Alpha"])
+	# Moving past the outer container must not stop at its nested lists.
+	_asserts.speech_contains(_chrome.getSpeechAfterKey(","), ["Toggle definition"])
+	_chrome.getSpeechAfterKey("control+home")
+	_chrome.getSpeechAfterKey("h")
+	for term, count in (("Alpha", 2), ("Alias", 2), ("Nested", 3), ("Solo", 1)):
+		speech, braille = _NvdaLib.getSpeechAndBrailleAfterKey("i")
+		expected = f"{term}  term"
+		if count > 1:
+			expected += f"  with {count} definitions"
+			_asserts.braille_contains(braille, [f"trm {count} defs", term])
+		else:
+			_builtIn.should_not_contain(speech, "with 1 definition")
+		# The containing definition can also be announced when entering a nested list.
+		_asserts.speech_contains(speech, [expected])
+		if term == "Alpha":
+			_asserts.speech_contains(speech, ["description list  with 2 items"])
+	# Remove and reinsert a definition without refreshing the page or virtual buffer.
+	for count in (1, 2):
+		_chrome.getSpeechAfterKey("b")
+		# Activation changes the DOM but need not generate speech.
+		_NvdaLib.getSpyLib().emulateKeyPress("enter")
+		_chrome.getSpeechAfterKey("control+home")
+		_chrome.getSpeechAfterKey("h")
+		for term in ("Alpha", "Alias"):
+			speech, braille = _NvdaLib.getSpeechAndBrailleAfterKey("i")
+			expected = f"{term}  term" + (f"  with {count} definitions" if count > 1 else "")
+			_builtIn.should_end_with(speech, expected)
+			if count > 1:
+				_asserts.braille_contains(braille, [f"trm {count} defs"])
+			else:
+				_builtIn.should_not_contain(speech, "definitions")
+				_builtIn.should_not_contain(braille, "defs")
+
+
+def test_definitionList_names(useUIA: bool = False) -> None:
+	"""Keep distinct author names, but announce matching names and contents only once."""
+	_NvdaLib.getSpyLib().set_configValue(["UIA", "allowInChromium"], 2 if useUIA else 3)
+	_chrome.prepareChrome("""
+		<h1>Named description list</h1>
+		<dl>
+			<dt id="firstTerm" aria-label="DT alternative">DT contents</dt>
+			<dd aria-label="DD alternative">DD contents</dd>
+			<dt aria-labelledby="termLabel">Short term</dt>
+			<dd aria-labelledby="definitionLabel">Short explanation</dd>
+			<dt aria-label="Same term">Same term</dt>
+			<dd aria-label="Same explanation">Same explanation</dd>
+			<dt>Unlabelled term</dt><dd>Unlabelled explanation</dd>
+		</dl>
+		<span hidden id="termLabel">Referenced term</span>
+		<span hidden id="definitionLabel">Referenced explanation</span>
+		<button onclick="
+			const term = document.getElementById('firstTerm');
+			if (term.getAttribute('aria-label') !== 'Updated term') {
+				term.setAttribute('aria-label', 'Updated term');
+			} else {
+				term.textContent = 'Updated term';
+			}
+		">Update term</button>
+	""")
+	_chrome.getSpeechAfterKey("h")
+	for expected in (
+		("DT alternative", "DT contents"),
+		("DD alternative", "DD contents"),
+		("Referenced term", "Short term"),
+		("Referenced explanation", "Short explanation"),
+		("Same term",),
+		("Same explanation",),
+		("Unlabelled term",),
+		("Unlabelled explanation",),
+	):
+		speech, braille = _NvdaLib.getSpeechAndBrailleAfterKey("downArrow")
+		for text in expected:
+			_builtIn.should_be_equal(speech.count(text), 1, f"Speech must contain {text!r} once: {speech!r}")
+			_builtIn.should_be_equal(
+				braille.count(text), 1, f"Braille must contain {text!r} once: {braille!r}"
+			)
+	_chrome.getSpeechAfterKey("control+home")
+	_chrome.getSpeechAfterKey("h")
+	for expected in ("DT alternative", "Referenced term", "Same term", "Unlabelled term"):
+		speech, braille = _NvdaLib.getSpeechAndBrailleAfterKey("i")
+		_builtIn.should_be_equal(speech.count(expected), 1)
+		_builtIn.should_be_equal(braille.count(expected), 1)
+	# Changing the name and then making the text match it must invalidate duplicate detection.
+	for _ in range(2):
+		_chrome.getSpeechAfterKey("b")
+		_NvdaLib.getSpyLib().emulateKeyPress("enter")
+		_chrome.getSpeechAfterKey("control+home")
+		_chrome.getSpeechAfterKey("h")
+		speech, braille = _NvdaLib.getSpeechAndBrailleAfterKey("i")
+		_builtIn.should_be_equal(speech.count("Updated term"), 1)
+		_builtIn.should_be_equal(braille.count("Updated term"), 1)
+
+
 def test_pr11606():
 	"""
 	Announce the correct line when placed at the end of a link at the end of a list item in a contenteditable

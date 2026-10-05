@@ -31,6 +31,23 @@ Note: For tests based on Chrome, be sure that no previous instance of Chrome is 
 Other options exist for specifying tests to run (e.g. by suite, tag, etc).
 Consult `runsystemtests --help`
 
+### Description lists in Firefox and MSHTML
+
+The opt-in tags `description_lists_firefox` and `description_lists_mshtml` run the same description-list checks in real Gecko and MSHTML hosts.
+For example: `runsystemtests.bat --include description_lists_firefox --include description_lists_mshtml`.
+They are not included in the general `NVDA` tag, because these hosts may not be available on every test machine.
+
+Firefox is located using its Windows App Paths registration, including Microsoft Store installations.
+An alternative executable can be supplied with `--variable "firefoxPath:C:\path\to\firefox.exe"`.
+Tests use `-no-remote` and a new temporary profile, without changing the user's Firefox profile.
+MSHTML tests use the Windows `mshta.exe` host with a locally generated HTA document and `IE=edge` document mode.
+They test the MSHTML engine, not the Internet Explorer application or Edge's IE mode.
+Unavailable hosts fail explicitly rather than silently substituting another browser.
+
+Both hosts verify native buffer creation in the NVDA log, direct and div-wrapped groups, shared definition counts, nested lists, paragraphs, speech, braille text, forward/reverse quick navigation, line reading, and definition removal/reinsertion without refreshing the buffer.
+The test closes its own window and removes its temporary profile/document.
+Do not use the keyboard while these tests run: user input changes focus and can interrupt the test NVDA instance.
+
 ## Tags are required
 
 Running this script with no arguments won't run any tests, instead an error will be given:

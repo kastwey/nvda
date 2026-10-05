@@ -17,6 +17,11 @@
 
 #### Web browsers
 
+* HTML description lists are now identified as "description list" in speech and "dlst" in braille, with distinct roles for terms and definitions. (#3858)
+Their reported item count reflects groups of associated terms and definitions.
+When a term has multiple associated definitions, their count is reported in speech and braille.
+List navigation with `l` and `shift+l` remains available; `i` and `shift+i` navigate terms rather than definitions.
+
 #### Applications
 
 * Fixed an issue where formulas and notes were not listed in Excel's elements list when it was opened from a sheet with multiple cells selected. (#20806, @CyrilleB79)
@@ -27,6 +32,11 @@ Please refer to [the developer guide](https://download.nvaccess.org/documentatio
 
 * Note: this is an Add-on API compatibility breaking release.
 Add-ons will need to be re-tested and have their manifest updated.
+
+* Added `controlTypes.Role.TERM` (159) for terms and `controlTypes.Role.DESCRIPTIONLIST` (160) for HTML description-list containers, plus the optional integer `definition-count` attribute on `textInfos.ControlField` for their terms. (#3858)
+`DESCRIPTIONLIST` is an internal NVDA role, not an ARIA role token; existing role values are unchanged.
+In Chromium UIA, description-list text fields are normalized from the raw accessibility tree without changing object roles.
+UIA cannot distinguish a native `dl` from an explicit `role="list"` with identical descendants; lists without exposed definitions retain `Role.LIST`.
 
 #### API Breaking Changes
 

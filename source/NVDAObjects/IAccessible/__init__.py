@@ -1112,7 +1112,8 @@ class IAccessible(Window):
 		# Readonly should override editable, except in the case of lists and listitems, where the readonly state
 		# differentiates between interactive and non-interactive lists in Firefox.
 		if (
-			self.role not in (controlTypes.Role.LIST, controlTypes.Role.LISTITEM)
+			self.role
+			not in (controlTypes.Role.LIST, controlTypes.Role.DESCRIPTIONLIST, controlTypes.Role.LISTITEM)
 			and controlTypes.State.READONLY in states
 		):
 			states.discard(controlTypes.State.EDITABLE)
@@ -2051,6 +2052,7 @@ class IAccessible(Window):
 					in (
 						controlTypes.Role.HEADING,
 						controlTypes.Role.LIST,
+						controlTypes.Role.DESCRIPTIONLIST,
 						controlTypes.Role.LISTITEM,
 					)
 					or (

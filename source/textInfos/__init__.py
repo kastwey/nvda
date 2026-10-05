@@ -54,6 +54,9 @@ class ControlField(Field):
 	"""Provides information about a control which encompasses text.
 	For example, a piece of text might be contained within a table, button, form, etc.
 	This field contains information about such a control, such as its role, name and description.
+	For terms in description lists, ``definition-count`` is the number of definitions
+	associated with every term in the same group, excluding nested lists' definitions.
+	It is an integer when known; omit it when the provider cannot determine the count.
 	"""
 
 	#: This field is usually a single line item; e.g. a link or heading.
@@ -133,6 +136,11 @@ class ControlField(Field):
 				and controlTypes.State.READONLY in states
 				and not formatConfig["reportLists"]
 			)
+			or (
+				role
+				in (controlTypes.Role.DESCRIPTIONLIST, controlTypes.Role.TERM, controlTypes.Role.DEFINITION)
+				and not formatConfig["reportLists"]
+			)
 			or (role == controlTypes.Role.ARTICLE and not formatConfig["reportArticles"])
 			or (role == controlTypes.Role.MARKED_CONTENT and not formatConfig["reportHighlight"])
 			or (
@@ -193,6 +201,8 @@ class ControlField(Field):
 			controlTypes.Role.ENDNOTE,
 			controlTypes.Role.EMBEDDEDOBJECT,
 			controlTypes.Role.MATH,
+			controlTypes.Role.TERM,
+			controlTypes.Role.DEFINITION,
 		) or (extraDetail and role == controlTypes.Role.LISTITEM):
 			return self.PRESCAT_MARKER
 		elif role in (controlTypes.Role.APPLICATION, controlTypes.Role.DIALOG):
@@ -208,6 +218,7 @@ class ControlField(Field):
 			role
 			in (
 				controlTypes.Role.BLOCKQUOTE,
+				controlTypes.Role.DESCRIPTIONLIST,
 				controlTypes.Role.GROUPING,
 				controlTypes.Role.FIGURE,
 				controlTypes.Role.CAPTION,

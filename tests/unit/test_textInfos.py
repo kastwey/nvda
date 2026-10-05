@@ -9,6 +9,7 @@ import unittest  # noqa: I001
 from unittest.mock import patch
 
 import config
+import controlTypes
 from .textProvider import BasicTextInfo, BasicTextProvider, MockBlackBoxTextInfo
 import textInfos
 from textInfos.offsets import Offsets
@@ -20,6 +21,28 @@ from textUtils.segFlag import WordSegFlag
 _LINE_OFFSETS = (5, 10)
 _SENTENCE_OFFSETS = (15, 20)
 _PARAGRAPH_OFFSETS = (25, 30)
+
+
+class TestDescriptionListPresentation(unittest.TestCase):
+	def test_termsAndDefinitionsAreMarkersWhenListsAreReported(self) -> None:
+		formatConfig = {"reportLists": True}
+		for role in (controlTypes.Role.TERM, controlTypes.Role.DEFINITION):
+			with self.subTest(role=role):
+				field = textInfos.ControlField(role=role)
+				self.assertEqual(
+					textInfos.ControlField.PRESCAT_MARKER,
+					field.getPresentationCategory([], formatConfig),
+				)
+
+	def test_termsAndDefinitionsAreLayoutWhenListsAreNotReported(self) -> None:
+		formatConfig = {"reportLists": False}
+		for role in (controlTypes.Role.TERM, controlTypes.Role.DEFINITION):
+			with self.subTest(role=role):
+				field = textInfos.ControlField(role=role)
+				self.assertEqual(
+					textInfos.ControlField.PRESCAT_LAYOUT,
+					field.getPresentationCategory([], formatConfig),
+				)
 
 
 class _LineOnlyTextInfo(BasicTextInfo):

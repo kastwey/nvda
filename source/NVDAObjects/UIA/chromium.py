@@ -1,18 +1,138 @@
 # A part of NonVisual Desktop Access (NVDA)
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
-# Copyright (C) 2020-2021 NV Access limited, Leonard de Ruijter
+# Copyright (C) 2020-2026 NV Access limited, Leonard de Ruijter
 
 
-import UIAHandler  # noqa: I001
+from comtypes import COMError  # noqa: I001
+
+from dataclasses import dataclass, field
+
+import aria
+import UIAHandler
 from . import web
 import controlTypes
+import textInfos
+from UIAHandler.browseMode import UIAControlQuicknavIterator
 
 """
 This module provides UIA behaviour specific to the chromium family of browsers.
 Note this is more specialised than UIA.web but less so than browser specific modules such as UIA.spartan_edge
 or UIA.anaheim_edge.
 """
+
+
+def _getPrimaryAriaRole(ariaRoles: object) -> str | None:
+	"""Return the first recognized role from a UIA AriaRole fallback list."""
+	if not isinstance(ariaRoles, str):
+		return None
+	return next(
+		(role for role in ariaRoles.lower().split() if role in aria.ariaRolesToNVDARoles),
+		None,
+	)
+
+
+@dataclass
+class _DescriptionListInfo:
+	"""Counts from the full list tree, including definitions outside the current text range."""
+
+	groupCount: int = 0
+	definitionCounts: dict[tuple[int, ...], int] = field(default_factory=dict)
+
+
+def _getDescriptionListInfo(
+	listElement: UIAHandler.IUIAutomationElement,
+) -> _DescriptionListInfo | None:
+	"""Count groups and associate each term with all definitions in its group.
+
+	Chromium exposes native description-list terms as ``listitem`` and definitions
+	as ``definition`` in the raw view. The control view can omit definitions and
+	expose their paragraphs instead, so it cannot provide association counts.
+	HTML also permits one level of direct ``div`` wrappers, exposed as ``group``
+	when retained in the accessibility tree.
+	UIA does not distinguish a native ``dl`` from an explicit ``role="list"``
+	with the same descendants. Empty lists and lists with no exposed definitions
+	therefore retain their ordinary list semantics.
+	"""
+	clientObject = UIAHandler.handler.clientObject
+	walker = clientObject.RawViewWalker
+	info = _DescriptionListInfo()
+	hasDefinitions = False
+	terms: list[tuple[int, ...]] = []
+	definitionCount = 0
+
+	def finishGroup() -> None:
+		nonlocal definitionCount
+		if terms and definitionCount:
+			info.groupCount += 1
+		for term in terms:
+			info.definitionCounts[term] = definitionCount
+		terms.clear()
+		definitionCount = 0
+
+	def processChildren(
+		parentElement: UIAHandler.IUIAutomationElement,
+		allowGroupWrappers: bool,
+	) -> None:
+		nonlocal hasDefinitions, definitionCount
+		child = walker.GetFirstChildElement(parentElement)
+		while child:
+			ariaRole = _getPrimaryAriaRole(
+				child.getCurrentPropertyValue(UIAHandler.UIA_AriaRolePropertyId),
+			)
+			if ariaRole in ("listitem", "term"):
+				if definitionCount:
+					finishGroup()
+				terms.append(tuple(child.getRuntimeId()))
+			elif ariaRole == "definition":
+				hasDefinitions = True
+				definitionCount += 1
+			elif allowGroupWrappers and ariaRole == "group":
+				processChildren(child, False)
+			child = walker.GetNextSiblingElement(child)
+
+	try:
+		# Native dl and ordinary lists both expose "list". Other recognized
+		# roles (including listbox/directory) must retain their explicit semantics.
+		if _getPrimaryAriaRole(
+			listElement.getCurrentPropertyValue(UIAHandler.UIA_AriaRolePropertyId),
+		) not in (None, "list"):
+			return None
+		processChildren(listElement, True)
+	except COMError:
+		return None
+	finishGroup()
+	return info if hasDefinitions else None
+
+
+def _normalizeDescriptionListTerms(fields: textInfos.TextInfo.TextWithFieldsT) -> None:
+	"""Normalize terms using their nearest list's full-tree association counts."""
+	controlFieldStack: list[tuple[textInfos.ControlField, _DescriptionListInfo | None]] = []
+	for item in fields:
+		if not isinstance(item, textInfos.FieldCommand):
+			continue
+		if item.command == "controlStart":
+			listInfo = item.field.pop("_descriptionListInfo", None)
+			nearestListInfo = next(
+				(
+					ancestorInfo
+					for field, ancestorInfo in reversed(controlFieldStack)
+					if field.get("role") in (controlTypes.Role.LIST, controlTypes.Role.DESCRIPTIONLIST)
+				),
+				None,
+			)
+			role = item.field.get("role")
+			if role == controlTypes.Role.TERM or (
+				role == controlTypes.Role.LISTITEM and nearestListInfo is not None
+			):
+				item.field["role"] = controlTypes.Role.TERM
+				if nearestListInfo is not None:
+					runtimeID = tuple(item.field.get("runtimeID", ()))
+					if runtimeID in nearestListInfo.definitionCounts:
+						item.field["definition-count"] = nearestListInfo.definitionCounts[runtimeID]
+			controlFieldStack.append((item.field, listInfo))
+		elif item.command == "controlEnd" and controlFieldStack:
+			controlFieldStack.pop()
 
 
 class ChromiumUIATextInfo(web.UIAWebTextInfo):
@@ -54,6 +174,22 @@ class ChromiumUIATextInfo(web.UIAWebTextInfo):
 		if field["role"] == controlTypes.Role.TABLE:  # noqa: SIM102
 			if not obj._getUIACacheablePropertyValue(UIAHandler.UIA_IsTablePatternAvailablePropertyId):
 				field["table-layout"] = True
+		if obj.role == controlTypes.Role.LIST:
+			listInfo = _getDescriptionListInfo(obj.UIAElement)
+			if listInfo is not None:
+				# Normalize the text field, not the object role: role lookups must not
+				# traverse the entire UIA tree or interfere with list overlay selection.
+				field["role"] = controlTypes.Role.DESCRIPTIONLIST
+				field["_descriptionListInfo"] = listInfo
+				field["_childcontrolcount"] = listInfo.groupCount
+		if field.get("name") and field["role"] in (
+			controlTypes.Role.LISTITEM,
+			controlTypes.Role.TERM,
+			controlTypes.Role.DEFINITION,
+		):
+			# List items are only identifiable as terms after their ancestors are normalized.
+			# Keep the element until then, without querying text for ordinary list items.
+			field["_descriptionListNameElement"] = obj.UIAElement
 		# Currently no way to tell if author has explicitly set name.
 		# Therefore always report the name if the control is not of a type that
 		# by definition uses its name for content.
@@ -62,6 +198,36 @@ class ChromiumUIATextInfo(web.UIAWebTextInfo):
 		if not field.get("nameIsContent") and field.get("name"):
 			field["alwaysReportName"] = True
 		return field
+
+	def _removeDuplicateDescriptionListNames(self, fields: textInfos.TextInfo.TextWithFieldsT) -> None:
+		"""Suppress names only when they duplicate the complete term or definition text."""
+		for item in fields:
+			if not isinstance(item, textInfos.FieldCommand) or item.command != "controlStart":
+				continue
+			field = item.field
+			element = field.pop("_descriptionListNameElement", None)
+			if element is None or field["role"] not in (controlTypes.Role.TERM, controlTypes.Role.DEFINITION):
+				continue
+			try:
+				# The reading range can cover only part of the element, so do not compare
+				# with the strings in fields. Chromium need not expose the label's origin.
+				textRange = self.obj.UIATextPattern.rangeFromChild(element)
+				text = textRange.getText(-1) if textRange else None
+			except COMError:
+				# Inability to prove duplication must not discard an accessible name.
+				continue
+			if text is not None and field["name"].split() == text.split():
+				field.pop("name", None)
+				field.pop("alwaysReportName", None)
+
+	def getTextWithFields(
+		self,
+		formatConfig: dict | None = None,
+	) -> textInfos.TextInfo.TextWithFieldsT:
+		fields = super().getTextWithFields(formatConfig)
+		_normalizeDescriptionListTerms(fields)
+		self._removeDuplicateDescriptionListNames(fields)
+		return fields
 
 
 class ChromiumUIA(web.UIAWeb):
@@ -75,6 +241,22 @@ class ChromiumUIA(web.UIAWeb):
 
 
 class ChromiumUIATreeInterceptor(web.UIAWebTreeInterceptor):
+	def _iterNodesByType(self, nodeType, direction="next", pos=None):
+		if nodeType == "listItem":
+			clientObject = UIAHandler.handler.clientObject
+			condition = clientObject.createOrCondition(
+				clientObject.createPropertyCondition(
+					UIAHandler.UIA_ControlTypePropertyId,
+					UIAHandler.UIA_ListItemControlTypeId,
+				),
+				clientObject.createPropertyCondition(
+					UIAHandler.UIA_AriaRolePropertyId,
+					"term",
+				),
+			)
+			return UIAControlQuicknavIterator(nodeType, self, pos, condition, direction)
+		return super()._iterNodesByType(nodeType, direction=direction, pos=pos)
+
 	def _get_documentConstantIdentifier(self):
 		return self.rootNVDAObject.parent._getUIACacheablePropertyValue(UIAHandler.UIA_AutomationIdPropertyId)
 

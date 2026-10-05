@@ -91,9 +91,10 @@ def getPropertiesBraille(**propertyValues) -> str:
 			states.discard(controlTypes.State.VISITED)
 			# Translators: Displayed in braille for a link which has been visited.
 			roleText = _("vlnk")
-		elif role == controlTypes.Role.LIST:
+		elif role in (controlTypes.Role.LIST, controlTypes.Role.DESCRIPTIONLIST):
 			if (
-				states
+				role == controlTypes.Role.LIST
+				and states
 				and controlTypes.State.MULTISELECTABLE in states
 				and config.conf["presentation"]["reportMultiSelect"]
 			):
@@ -107,7 +108,7 @@ def getPropertiesBraille(**propertyValues) -> str:
 			else:
 				roleText = roleLabels.get(role, role.displayString)
 			if childControlCount:
-				roleText += childControlCount
+				roleText += str(childControlCount)
 				childControlCount = None
 
 		elif (
@@ -304,10 +305,19 @@ def _getControlFieldForReportStart(
 	level = field.get("level")
 	if level:
 		props["positionInfo"] = {"level": level}
-	if role == controlTypes.Role.LIST and (int(childControlCount := field.get("_childcontrolcount", 0))) > 0:
+	if (
+		role in (controlTypes.Role.LIST, controlTypes.Role.DESCRIPTIONLIST)
+		and (int(childControlCount := field.get("_childcontrolcount", 0))) > 0
+	):
 		props["positionInfo"] = {"childControlCount": childControlCount}
 
 	text = getPropertiesBraille(**props)
+	if role == controlTypes.Role.TERM and (definitionCount := int(field.get("definition-count", 0))) > 1:
+		text += TEXT_SEPARATOR + (
+			# Translators: Braille abbreviation for the number of definitions associated with a term.
+			# For example: "trm 2 defs". Several terms can share the same definitions.
+			ngettext("%s def", "%s defs", definitionCount) % definitionCount
+		)
 	if content:
 		if text:
 			text += TEXT_SEPARATOR

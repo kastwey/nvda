@@ -1,7 +1,7 @@
 # A part of NonVisual Desktop Access (NVDA)
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
-# Copyright (C) 2009-2024 NV Access Limited, Babbage B.V., Accessolutions, Julien Cochuyt, Cyrille Bougot
+# Copyright (C) 2009-2026 NV Access Limited, Babbage B.V., Accessolutions, Julien Cochuyt, Cyrille Bougot
 
 from comtypes import COMError  # noqa: I001
 from . import VirtualBuffer, VirtualBufferTextInfo, VBufStorage_findMatch_word, VBufStorage_findMatch_notEmpty
@@ -96,7 +96,7 @@ class MSHTMLTextInfo(VirtualBufferTextInfo):
 			attrs["placeholder"] = placeholder
 		nodeName = attrs.get("IHTMLDOMNode::nodeName", "")
 		roleAttrib = attrs.get("HTMLAttrib::role", "")
-		ariaRoles = [ar for ar in roleAttrib.split(" ") if ar]
+		ariaRoles = roleAttrib.split()
 		# choose role
 		# Priority is aria role -> HTML tag name -> IAccessible role
 		role = next(
@@ -212,6 +212,11 @@ class MSHTMLTextInfo(VirtualBufferTextInfo):
 			level = ariaLevel
 		if role:
 			attrs["role"] = role
+		if (
+			role == controlTypes.Role.DESCRIPTIONLIST
+			and (groupCount := attrs.get("description-list-group-count")) is not None
+		):
+			attrs["_childcontrolcount"] = groupCount
 		attrs["states"] = states
 		if level:
 			attrs["level"] = level
@@ -427,7 +432,7 @@ class MSHTML(VirtualBuffer):
 		elif nodeType == "list":
 			attrs = {"IHTMLDOMNode::nodeName": ["UL", "OL", "DL"]}
 		elif nodeType == "listItem":
-			attrs = {"IHTMLDOMNode::nodeName": ["LI", "DD", "DT"]}
+			attrs = {"IHTMLDOMNode::nodeName": ["LI", "DT"]}
 		elif nodeType == "blockQuote":
 			attrs = {"IHTMLDOMNode::nodeName": ["BLOCKQUOTE"]}
 		elif nodeType == "annotation":

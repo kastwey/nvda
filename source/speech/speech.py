@@ -1,7 +1,7 @@
 # A part of NonVisual Desktop Access (NVDA)
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
-# Copyright (C) 2006-2025 NV Access Limited, Peter Vágner, Aleksey Sadovoy, Babbage B.V., Bill Dengler,
+# Copyright (C) 2006-2026 NV Access Limited, Peter Vágner, Aleksey Sadovoy, Babbage B.V., Bill Dengler,
 # Julien Cochuyt, Derek Riemer, Cyrille Bougot, Leonard de Ruijter, Łukasz Golonka, Cary-rowen
 
 """High-level functions to speak information."""
@@ -2359,6 +2359,12 @@ def getControlFieldSpeech(
 		]
 	else:
 		roleTextSequence = getPropertiesSpeech(reason=reason, role=role)
+	if role == controlTypes.Role.TERM and (definitionCount := int(attrs.get("definition-count", 0))) > 1:
+		roleTextSequence.append(
+			# Translators: The number of definitions associated with a term in a description list.
+			# For example: "term with 2 definitions". Several terms can share the same definitions.
+			ngettext("with %s definition", "with %s definitions", definitionCount) % definitionCount,
+		)
 	stateTextSequence = getPropertiesSpeech(reason=reason, states=states, _role=role)
 	keyboardShortcutSequence = []
 	if config.conf["presentation"]["reportKeyboardShortcuts"]:
@@ -2412,8 +2418,10 @@ def getControlFieldSpeech(
 	if (
 		childControlCount
 		and fieldType == "start_addedToControlFieldStack"
-		and role == controlTypes.Role.LIST
-		and controlTypes.State.READONLY in states
+		and (
+			role == controlTypes.Role.DESCRIPTIONLIST
+			or (role == controlTypes.Role.LIST and controlTypes.State.READONLY in states)
+		)
 	):
 		# List.
 		# #7652: containerContainsText variable is set here, but the actual generation of all other output is

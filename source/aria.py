@@ -1,5 +1,5 @@
 # A part of NonVisual Desktop Access (NVDA)
-# Copyright (C) 2009-2022 NV Access Limited, Leonard de Ruijter
+# Copyright (C) 2009-2026 NV Access Limited, Leonard de Ruijter
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
 
@@ -55,6 +55,7 @@ ariaRolesToNVDARoles: dict[str, controlTypes.Role] = {
 	"tab": controlTypes.Role.TAB,
 	"tablist": controlTypes.Role.TABCONTROL,
 	"tabpanel": controlTypes.Role.PROPERTYPAGE,
+	"term": controlTypes.Role.TERM,
 	"textbox": controlTypes.Role.EDITABLETEXT,
 	"toolbar": controlTypes.Role.TOOLBAR,
 	"tooltip": controlTypes.Role.TOOLTIP,

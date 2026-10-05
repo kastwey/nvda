@@ -1,7 +1,7 @@
 # A part of NonVisual Desktop Access (NVDA)
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
-# Copyright (C) 2010-2022 NV Access Limited
+# Copyright (C) 2010-2026 NV Access Limited
 
 """NVDAObjects for the Chromium browser project"""
 
@@ -192,7 +192,9 @@ def findExtraOverlayClasses(obj, clsList):
 		clsList.append(ComboboxListItem)
 	elif obj.role == controlTypes.Role.TOGGLEBUTTON:
 		clsList.append(ToggleButton)
-	elif obj.role == controlTypes.Role.LIST and obj.IA2Attributes.get("tag") in ("ul", "dl", "ol"):
+	elif obj.role in (controlTypes.Role.LIST, controlTypes.Role.DESCRIPTIONLIST) and obj.IA2Attributes.get(
+		"tag",
+	) in ("ul", "dl", "ol"):
 		clsList.append(PresentationalList)
 	elif obj.role == controlTypes.Role.GROUPING and obj.IA2Attributes.get("tag", "").casefold() == "figure":
 		clsList.append(Figure)
