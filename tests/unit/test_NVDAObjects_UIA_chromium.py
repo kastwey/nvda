@@ -166,6 +166,8 @@ class TestDescriptionListGroupCount(unittest.TestCase):
 			with self.subTest(role=role):
 				listElement = _Element(role, [_Element("term"), _Element("definition")])
 				self.assertIsNone(chromium._getDescriptionListInfo(listElement))
+				self.assertEqual(0, listElement.cacheUpdates)
+		self.client.createCacheRequest.assert_not_called()
 		self.assertEqual(
 			1,
 			chromium._getDescriptionListInfo(
@@ -267,12 +269,16 @@ class TestDescriptionListGroupCount(unittest.TestCase):
 		self.assertIsNone(chromium._getDescriptionListInfo(_listElement("listitem", "description")))
 
 	def test_comFailureDiscardsPartialCounts(self) -> None:
-		with patch.object(
-			_Element,
-			"getCachedChildren",
-			side_effect=chromium.COMError(-2147467259, "Failed", None),
+		for obj, method in (
+			(_Element, "getCachedChildren"),
+			(_Element, "getCachedPropertyValue"),
+			(self.client, "createCacheRequest"),
 		):
-			self.assertIsNone(chromium._getDescriptionListInfo(_listElement("term", "definition")))
+			with (
+				self.subTest(method=method),
+				patch.object(obj, method, side_effect=chromium.COMError(-2147467259, "Failed", None)),
+			):
+				self.assertIsNone(chromium._getDescriptionListInfo(_listElement("term", "definition")))
 
 	def test_largeListUsesOneRawViewSnapshot(self) -> None:
 		listElement = _listElement(*(["term", "definition"] * 1000))
@@ -281,7 +287,11 @@ class TestDescriptionListGroupCount(unittest.TestCase):
 		self.assertEqual(1000, info.groupCount)
 		self.assertEqual(1, listElement.cacheUpdates)
 		self.assertTrue(all(child.cacheUpdates == 0 for child in listElement.children))
-		currentProperty.assert_called_once_with(chromium.UIAHandler.UIA_AriaRolePropertyId)
+		currentProperty.assert_not_called()
+		self.assertIn(
+			chromium.UIAHandler.UIA_AriaRolePropertyId,
+			chromium.ChromiumUIATextInfo._controlFieldUIACachedPropertyIDs,
+		)
 		request = self.client.createCacheRequest.return_value
 		self.assertEqual(chromium.UIAHandler.TreeScope_Children, request.treeScope)
 		self.assertIs(self.client.RawViewCondition, request.treeFilter)
@@ -292,13 +302,40 @@ class TestDescriptionListGroupCount(unittest.TestCase):
 
 	def test_countsAreRecomputedAfterChange(self) -> None:
 		term = _Element("term")
+		listElement = _Element("list")
 		for count in (2, 3, 1):
-			listElement = _Element("list", [term, *(_Element("definition") for _ in range(count))])
+			listElement.children = [term, *(_Element("definition") for _ in range(count))]
 			info = chromium._getDescriptionListInfo(listElement)
 			self.assertEqual(count, info.definitionCounts[term.getRuntimeId()])
+		self.assertEqual(3, listElement.cacheUpdates)
 
 
 class TestNormalizeDescriptionListTerms(unittest.TestCase):
+	def test_deepFieldsUseLinearRoleLookups(self) -> None:
+		groups = [textInfos.ControlField(role=controlTypes.Role.GROUPING) for _ in range(500)]
+		term = textInfos.ControlField(role=controlTypes.Role.LISTITEM, runtimeID=(1,))
+		fields = _fieldCommands(
+			textInfos.ControlField(
+				role=controlTypes.Role.DESCRIPTIONLIST,
+				_descriptionListInfo=chromium._DescriptionListInfo(1, {(1,): 2}),
+			),
+			*groups,
+			term,
+		)
+		lookups = 0
+
+		def countedGet(field: textInfos.ControlField, key: str, default: object = None) -> object:
+			nonlocal lookups
+			lookups += 1
+			return dict.get(field, key, default)
+
+		with patch.object(textInfos.ControlField, "get", countedGet):
+			chromium._normalizeDescriptionListTerms(fields)
+		self.assertEqual(controlTypes.Role.TERM, term["role"])
+		self.assertEqual(2, term["definition-count"])
+		# Count work instead of timing, so the regression is independent of machine speed.
+		self.assertLessEqual(lookups, len(groups) + 4)
+
 	def test_ordinaryListItemIsUnchanged(self) -> None:
 		listField = textInfos.ControlField(role=controlTypes.Role.LIST)
 		itemField = textInfos.ControlField(role=controlTypes.Role.LISTITEM, name="Item")
@@ -394,6 +431,14 @@ class TestNormalizeDescriptionListTerms(unittest.TestCase):
 				term = textInfos.ControlField(role=controlTypes.Role.LISTITEM, runtimeID=(2,))
 				chromium._normalizeDescriptionListTerms(_fieldCommands(outer, inner, term))
 				self.assertEqual(expected, term.get("definition-count"))
+				# Leaving an inner list must restore the outer count for the next term.
+				outer["_descriptionListInfo"] = chromium._DescriptionListInfo(1, {(2,): 5})
+				inner["_descriptionListInfo"] = innerInfo
+				followingTerm = textInfos.ControlField(role=controlTypes.Role.LISTITEM, runtimeID=(2,))
+				fields = _fieldCommands(outer, inner, term)
+				fields[-1:-1] = _fieldCommands(followingTerm)
+				chromium._normalizeDescriptionListTerms(fields)
+				self.assertEqual(5, followingTerm["definition-count"])
 
 	def test_explicitItemRoleIsUnchanged(self) -> None:
 		listField = textInfos.ControlField(

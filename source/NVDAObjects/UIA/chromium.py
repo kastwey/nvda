@@ -53,16 +53,8 @@ def _getDescriptionListInfo(
 	UIA does not distinguish a native ``dl`` from an explicit ``role="list"``
 	with the same descendants. Empty lists and lists with no exposed definitions
 	therefore retain their ordinary list semantics.
+	The element must include the AriaRole property cached for control fields.
 	"""
-	clientObject = UIAHandler.handler.clientObject
-	# Fetch each level in one cache request, rather than making cross-process
-	# calls for every sibling, role and runtime ID. Do not retain this snapshot
-	# between reads: DOM changes must update the counts immediately.
-	cacheRequest = clientObject.createCacheRequest()
-	cacheRequest.treeScope = UIAHandler.TreeScope_Children
-	cacheRequest.treeFilter = clientObject.RawViewCondition
-	cacheRequest.addProperty(UIAHandler.UIA_AriaRolePropertyId)
-	cacheRequest.addProperty(UIAHandler.UIA_RuntimeIdPropertyId)
 	info = _DescriptionListInfo()
 	hasDefinitions = False
 	terms: list[tuple[int, ...]] = []
@@ -104,9 +96,18 @@ def _getDescriptionListInfo(
 		# Native dl and ordinary lists both expose "list". Other recognized
 		# roles (including listbox/directory) must retain their explicit semantics.
 		if _getPrimaryAriaRole(
-			listElement.getCurrentPropertyValue(UIAHandler.UIA_AriaRolePropertyId),
+			listElement.getCachedPropertyValue(UIAHandler.UIA_AriaRolePropertyId),
 		) not in (None, "list"):
 			return None
+		clientObject = UIAHandler.handler.clientObject
+		# Fetch each level in one cache request, rather than making cross-process
+		# calls for every sibling, role and runtime ID. Do not retain this snapshot
+		# between reads: DOM changes must update the counts immediately.
+		cacheRequest = clientObject.createCacheRequest()
+		cacheRequest.treeScope = UIAHandler.TreeScope_Children
+		cacheRequest.treeFilter = clientObject.RawViewCondition
+		cacheRequest.addProperty(UIAHandler.UIA_AriaRolePropertyId)
+		cacheRequest.addProperty(UIAHandler.UIA_RuntimeIdPropertyId)
 		processChildren(listElement, True)
 	except COMError:
 		return None
@@ -116,20 +117,14 @@ def _getDescriptionListInfo(
 
 def _normalizeDescriptionListTerms(fields: textInfos.TextInfo.TextWithFieldsT) -> None:
 	"""Normalize terms using their nearest list's full-tree association counts."""
-	controlFieldStack: list[tuple[textInfos.ControlField, _DescriptionListInfo | None]] = []
+	# Inherit the nearest list at each level rather than repeatedly searching ancestors.
+	controlFieldStack: list[_DescriptionListInfo | None] = []
 	for item in fields:
 		if not isinstance(item, textInfos.FieldCommand):
 			continue
 		if item.command == "controlStart":
 			listInfo = item.field.pop("_descriptionListInfo", None)
-			nearestListInfo = next(
-				(
-					ancestorInfo
-					for field, ancestorInfo in reversed(controlFieldStack)
-					if field.get("role") in (controlTypes.Role.LIST, controlTypes.Role.DESCRIPTIONLIST)
-				),
-				None,
-			)
+			nearestListInfo = controlFieldStack[-1] if controlFieldStack else None
 			role = item.field.get("role")
 			if role == controlTypes.Role.TERM or (
 				role == controlTypes.Role.LISTITEM and nearestListInfo is not None
@@ -139,7 +134,11 @@ def _normalizeDescriptionListTerms(fields: textInfos.TextInfo.TextWithFieldsT) -
 					runtimeID = tuple(item.field.get("runtimeID", ()))
 					if runtimeID in nearestListInfo.definitionCounts:
 						item.field["definition-count"] = nearestListInfo.definitionCounts[runtimeID]
-			controlFieldStack.append((item.field, listInfo))
+			controlFieldStack.append(
+				listInfo
+				if role in (controlTypes.Role.LIST, controlTypes.Role.DESCRIPTIONLIST)
+				else nearestListInfo,
+			)
 		elif item.command == "controlEnd" and controlFieldStack:
 			controlFieldStack.pop()
 
