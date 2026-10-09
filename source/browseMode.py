@@ -328,6 +328,7 @@ class BrowseModeTreeInterceptor(treeInterceptorHandler.TreeInterceptor):
 			controlTypes.Role.COMBOBOX,
 			controlTypes.Role.EDITABLETEXT,
 			controlTypes.Role.LIST,
+			controlTypes.Role.DESCRIPTIONLIST,
 			controlTypes.Role.LISTITEM,
 			controlTypes.Role.SLIDER,
 			controlTypes.Role.TABCONTROL,
@@ -405,7 +406,7 @@ class BrowseModeTreeInterceptor(treeInterceptorHandler.TreeInterceptor):
 			if (
 				role == controlTypes.Role.LISTITEM
 				and controlTypes.State.FOCUSED in states
-				and obj.parent.role == controlTypes.Role.LIST
+				and obj.parent.role in (controlTypes.Role.LIST, controlTypes.Role.DESCRIPTIONLIST)
 				and controlTypes.State.FOCUSABLE in obj.parent.states
 			):
 				return True

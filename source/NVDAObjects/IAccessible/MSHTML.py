@@ -813,13 +813,11 @@ class MSHTML(IAccessible):
 	def _get_role(self):
 		ariaRole = None
 		if self.HTMLNode:
+			ariaRoles = (self.HTMLAttributes["role"] or "").split()
 			ariaRole = next(
-				(
-					role
-					for role in (self.HTMLAttributes["role"] or "").split()
-					if role in aria.ariaRolesToNVDARoles
-				),
-				None,
+				(role for role in ariaRoles if role in aria.ariaRolesToNVDARoles),
+				# Retain an unknown role for the unsupported-tag/edit-field guard below.
+				ariaRoles[0] if ariaRoles else None,
 			)
 			if ariaRole:
 				role = aria.ariaRolesToNVDARoles.get(ariaRole)
@@ -831,6 +829,8 @@ class MSHTML(IAccessible):
 					return controlTypes.Role.EMBEDDEDOBJECT
 				if self.HTMLNodeHasAncestorIAccessible or nodeName in (
 					"DL",
+					"DT",
+					"DD",
 					"BODY",
 					"FRAMESET",
 					"FRAME",

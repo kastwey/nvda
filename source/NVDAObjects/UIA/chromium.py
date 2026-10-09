@@ -55,7 +55,14 @@ def _getDescriptionListInfo(
 	therefore retain their ordinary list semantics.
 	"""
 	clientObject = UIAHandler.handler.clientObject
-	walker = clientObject.RawViewWalker
+	# Fetch each level in one cache request, rather than making cross-process
+	# calls for every sibling, role and runtime ID. Do not retain this snapshot
+	# between reads: DOM changes must update the counts immediately.
+	cacheRequest = clientObject.createCacheRequest()
+	cacheRequest.treeScope = UIAHandler.TreeScope_Children
+	cacheRequest.treeFilter = clientObject.RawViewCondition
+	cacheRequest.addProperty(UIAHandler.UIA_AriaRolePropertyId)
+	cacheRequest.addProperty(UIAHandler.UIA_RuntimeIdPropertyId)
 	info = _DescriptionListInfo()
 	hasDefinitions = False
 	terms: list[tuple[int, ...]] = []
@@ -75,21 +82,23 @@ def _getDescriptionListInfo(
 		allowGroupWrappers: bool,
 	) -> None:
 		nonlocal hasDefinitions, definitionCount
-		child = walker.GetFirstChildElement(parentElement)
-		while child:
+		children = parentElement.buildUpdatedCache(cacheRequest).getCachedChildren()
+		if not children:
+			return
+		for index in range(children.length):
+			child = children.getElement(index)
 			ariaRole = _getPrimaryAriaRole(
-				child.getCurrentPropertyValue(UIAHandler.UIA_AriaRolePropertyId),
+				child.getCachedPropertyValue(UIAHandler.UIA_AriaRolePropertyId),
 			)
 			if ariaRole in ("listitem", "term"):
 				if definitionCount:
 					finishGroup()
-				terms.append(tuple(child.getRuntimeId()))
+				terms.append(tuple(child.getCachedPropertyValue(UIAHandler.UIA_RuntimeIdPropertyId)))
 			elif ariaRole == "definition":
 				hasDefinitions = True
 				definitionCount += 1
 			elif allowGroupWrappers and ariaRole == "group":
 				processChildren(child, False)
-			child = walker.GetNextSiblingElement(child)
 
 	try:
 		# Native dl and ordinary lists both expose "list". Other recognized

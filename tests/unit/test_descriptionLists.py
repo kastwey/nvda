@@ -6,8 +6,11 @@
 """Description-list counts at the native-buffer and presentation boundaries."""
 
 import unittest  # noqa: I001
+from types import SimpleNamespace
+from unittest.mock import patch
 
 import IAccessibleHandler  # noqa: F401 - Initialize before importing IAccessible object modules.
+import browseMode
 import config
 import controlTypes
 import oleacc
@@ -17,6 +20,37 @@ from controlTypes import OutputReason
 from speech.speech import getControlFieldSpeech
 from virtualBuffers.gecko_ia2 import Gecko_ia2_TextInfo
 from virtualBuffers.MSHTML import MSHTMLTextInfo
+
+
+class TestDescriptionListFocusMode(unittest.TestCase):
+	def test_descriptionListPreservesListFocusBehavior(self) -> None:
+		"""Changing a list's spoken role must not change keyboard interaction."""
+		interceptor = object.__new__(browseMode.BrowseModeTreeInterceptor)
+		interceptor.disableAutoPassThrough = False
+		interceptor._passThrough = False
+		settings = config.conf["virtualBuffers"].copy()
+		settings.update(autoPassThroughOnFocusChange=True, autoPassThroughOnCaretMove=True)
+		with patch.object(config, "conf", {"virtualBuffers": settings}):
+			for role in (controlTypes.Role.LIST, controlTypes.Role.DESCRIPTIONLIST):
+				for readonly in (False, True):
+					for reason in (OutputReason.FOCUS, OutputReason.CARET, OutputReason.QUICKNAV):
+						with self.subTest(role=role, readonly=readonly, reason=reason):
+							states = {controlTypes.State.FOCUSABLE, controlTypes.State.FOCUSED}
+							if readonly:
+								states.add(controlTypes.State.READONLY)
+							obj = SimpleNamespace(role=role, states=states, isFocusable=True)
+							self.assertEqual(
+								not readonly and reason != OutputReason.QUICKNAV,
+								interceptor.shouldPassThrough(obj, reason),
+							)
+				parent = SimpleNamespace(role=role, states={controlTypes.State.FOCUSABLE})
+				item = SimpleNamespace(
+					role=controlTypes.Role.LISTITEM,
+					states={controlTypes.State.READONLY, controlTypes.State.FOCUSED},
+					isFocusable=True,
+					parent=parent,
+				)
+				self.assertTrue(interceptor.shouldPassThrough(item, OutputReason.FOCUS))
 
 
 class TestDescriptionListFields(unittest.TestCase):

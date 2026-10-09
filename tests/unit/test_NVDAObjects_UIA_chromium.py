@@ -15,6 +15,7 @@ import controlTypes
 import oleacc
 import textInfos
 from braille.regions.properties import getControlFieldBraille
+from comInterfaces import IAccessible2Lib as IA2
 from NVDAObjects.IAccessible import IAccessible
 from NVDAObjects.IAccessible.ia2Web import Ia2Web
 from NVDAObjects.IAccessible.MSHTML import MSHTML as MSHTMLObject
@@ -28,9 +29,7 @@ class _Element:
 	def __init__(self, role: str, children: list["_Element"] | None = None) -> None:
 		self.role = role
 		self.children = children or []
-		for index, child in enumerate(self.children):
-			child.nextSibling = self.children[index + 1] if index + 1 < len(self.children) else None
-		self.nextSibling: _Element | None = None
+		self.cacheUpdates = 0
 
 	def getCurrentPropertyValue(self, _propertyId: int) -> str:
 		return self.role
@@ -38,15 +37,17 @@ class _Element:
 	def getRuntimeId(self) -> tuple[int, ...]:
 		return (id(self),)
 
+	def buildUpdatedCache(self, request: object) -> "_Element":
+		self.cacheUpdates += 1
+		return self
 
-class _Walker:
-	@staticmethod
-	def GetFirstChildElement(element: _Element) -> _Element | None:
-		return element.children[0] if element.children else None
+	def getCachedChildren(self) -> SimpleNamespace:
+		return SimpleNamespace(length=len(self.children), getElement=self.children.__getitem__)
 
-	@staticmethod
-	def GetNextSiblingElement(element: _Element) -> _Element | None:
-		return element.nextSibling
+	def getCachedPropertyValue(self, propertyId: int) -> str | tuple[int, ...]:
+		if propertyId == chromium.UIAHandler.UIA_RuntimeIdPropertyId:
+			return self.getRuntimeId()
+		return self.role
 
 
 def _fieldCommands(*fields: textInfos.ControlField) -> list[textInfos.FieldCommand | str]:
@@ -63,10 +64,11 @@ def _listElement(*roles: str) -> _Element:
 
 class TestDescriptionListGroupCount(unittest.TestCase):
 	def setUp(self) -> None:
+		self.client = Mock()
 		self.handlerPatch = patch.object(
 			chromium.UIAHandler,
 			"handler",
-			SimpleNamespace(clientObject=SimpleNamespace(RawViewWalker=_Walker())),
+			SimpleNamespace(clientObject=self.client),
 		)
 		self.handlerPatch.start()
 		self.addCleanup(self.handlerPatch.stop)
@@ -76,6 +78,8 @@ class TestDescriptionListGroupCount(unittest.TestCase):
 		self.assertEqual("button", chromium._getPrimaryAriaRole("button term"))
 		testCases = (
 			("ordinary list", _listElement("listitem", "listitem"), None),
+			("empty list", _listElement(), None),
+			("terms without definitions", _listElement("term", "term"), None),
 			(
 				"ordinary list with group",
 				_Element("list", [_Element("group", [_Element("listitem")])]),
@@ -264,11 +268,27 @@ class TestDescriptionListGroupCount(unittest.TestCase):
 
 	def test_comFailureDiscardsPartialCounts(self) -> None:
 		with patch.object(
-			_Walker,
-			"GetNextSiblingElement",
+			_Element,
+			"getCachedChildren",
 			side_effect=chromium.COMError(-2147467259, "Failed", None),
 		):
 			self.assertIsNone(chromium._getDescriptionListInfo(_listElement("term", "definition")))
+
+	def test_largeListUsesOneRawViewSnapshot(self) -> None:
+		listElement = _listElement(*(["term", "definition"] * 1000))
+		with patch.object(_Element, "getCurrentPropertyValue", return_value="list") as currentProperty:
+			info = chromium._getDescriptionListInfo(listElement)
+		self.assertEqual(1000, info.groupCount)
+		self.assertEqual(1, listElement.cacheUpdates)
+		self.assertTrue(all(child.cacheUpdates == 0 for child in listElement.children))
+		currentProperty.assert_called_once_with(chromium.UIAHandler.UIA_AriaRolePropertyId)
+		request = self.client.createCacheRequest.return_value
+		self.assertEqual(chromium.UIAHandler.TreeScope_Children, request.treeScope)
+		self.assertIs(self.client.RawViewCondition, request.treeFilter)
+		self.assertEqual(
+			[chromium.UIAHandler.UIA_AriaRolePropertyId, chromium.UIAHandler.UIA_RuntimeIdPropertyId],
+			[call.args[0] for call in request.addProperty.call_args_list],
+		)
 
 	def test_countsAreRecomputedAfterChange(self) -> None:
 		term = _Element("term")
@@ -541,6 +561,9 @@ class TestNativeDescriptionListRoles(unittest.TestCase):
 				("dl", "button list", oleacc.ROLE_SYSTEM_PUSHBUTTON, controlTypes.Role.BUTTON),
 				("ul", "", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.LIST),
 				("ol", "", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.LIST),
+				("div", "term", IA2.IA2_ROLE_TEXT_FRAME, controlTypes.Role.TERM),
+				("div", "unsupported term", IA2.IA2_ROLE_TEXT_FRAME, controlTypes.Role.TERM),
+				("div", "button term", oleacc.ROLE_SYSTEM_PUSHBUTTON, controlTypes.Role.BUTTON),
 			):
 				with self.subTest(provider=textInfoClass, tag=tag, ariaRole=ariaRole):
 					info = textInfoClass.__new__(textInfoClass)
@@ -601,6 +624,27 @@ class TestNativeDescriptionListRoles(unittest.TestCase):
 					obj = object.__new__(MSHTMLObject)
 					self.assertEqual(expectedRole, obj._get_role())
 
+	def test_mshtmlTermAndDefinitionObjectRoles(self) -> None:
+		for hasAncestor in (False, True):
+			for tag, nativeRole in (("DT", controlTypes.Role.TERM), ("DD", controlTypes.Role.DEFINITION)):
+				for ariaRole, expected in (
+					("", nativeRole),
+					("unsupported", nativeRole),
+					("button", controlTypes.Role.BUTTON),
+				):
+					with (
+						self.subTest(hasAncestor=hasAncestor, tag=tag, ariaRole=ariaRole),
+						patch.multiple(
+							MSHTMLObject,
+							create=True,
+							HTMLNode=True,
+							HTMLAttributes={"role": ariaRole},
+							HTMLNodeName=tag,
+							HTMLNodeHasAncestorIAccessible=hasAncestor,
+						),
+					):
+						self.assertEqual(expected, object.__new__(MSHTMLObject)._get_role())
+
 	def test_nativeListQuickNavIsUnchanged(self) -> None:
 		self.assertEqual(
 			{"IAccessible::role": [oleacc.ROLE_SYSTEM_LIST]},
@@ -610,3 +654,18 @@ class TestNativeDescriptionListRoles(unittest.TestCase):
 			{"IHTMLDOMNode::nodeName": ["UL", "OL", "DL"]},
 			MSHTML._searchableAttribsForNodeType(None, "list"),
 		)
+
+	def test_mshtmlUnknownRoleDoesNotBecomeAnEditField(self) -> None:
+		with (
+			patch.object(IAccessible, "role", controlTypes.Role.EDITABLETEXT),
+			patch.multiple(
+				MSHTMLObject,
+				create=True,
+				HTMLNode=True,
+				HTMLAttributes={"role": "unsupported"},
+				HTMLNodeName="FUTURE-TAG",
+				HTMLNodeHasAncestorIAccessible=False,
+				IAccessibleChildID=0,
+			),
+		):
+			self.assertEqual(controlTypes.Role.STATICTEXT, object.__new__(MSHTMLObject)._get_role())

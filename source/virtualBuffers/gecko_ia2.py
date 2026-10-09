@@ -135,7 +135,7 @@ class Gecko_ia2_TextInfo(VirtualBufferTextInfo):
 			role = controlTypes.Role.BLOCKQUOTE
 		elif htmlTag == "dl" and primaryXmlRole is None and role == controlTypes.Role.LIST:
 			role = controlTypes.Role.DESCRIPTIONLIST
-		elif htmlTag == "dt" and primaryXmlRole in (None, "term"):
+		elif primaryXmlRole == "term" or (htmlTag == "dt" and primaryXmlRole is None):
 			role = controlTypes.Role.TERM
 		elif htmlTag == "dd" and primaryXmlRole in (None, "description", "definition"):
 			role = controlTypes.Role.DEFINITION

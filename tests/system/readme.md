@@ -33,6 +33,11 @@ Consult `runsystemtests --help`
 
 ### Description lists in Firefox and MSHTML
 
+The `chrome_list` tag includes description-list roles, counts and accessible-name tests through both IAccessible2 and UIA.
+The UIA count tests deliberately do not assert comma navigation: the independent issue #20971 affects that command in unchanged NVDA.
+They still exercise list and term navigation, speech and braille, and definition removal/reinsertion.
+The IAccessible2 count tests retain the comma-navigation assertion.
+
 The opt-in tags `description_lists_firefox` and `description_lists_mshtml` run the same description-list checks in real Gecko and MSHTML hosts.
 For example: `runsystemtests.bat --include description_lists_firefox --include description_lists_mshtml`.
 They are not included in the general `NVDA` tag, because these hosts may not be available on every test machine.

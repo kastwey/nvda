@@ -1,6 +1,7 @@
 # A part of NonVisual Desktop Access (NVDA)
 # Copyright (C) 2026 NV Access Limited
-# This file may be used under the terms of the GNU General Public License, version 2 or later.
+# This file may be used under the terms of the GNU General Public License, version 2 or later, as modified by the NVDA license.
+# For full terms and any additional permissions, see the NVDA license file: https://github.com/nvaccess/nvda/blob/master/copying.txt
 
 """Opt-in real Firefox and MSHTML tests using isolated, locally generated documents."""
 
@@ -145,7 +146,6 @@ class descriptionListTests:
 			("l", "description list", 1, "Nested"),
 			("l", "list", 1, "Ordinary item"),
 			("shift+l", "description list", 1, "Nested"),
-			("shift+l", "description list", 2, "Alpha"),
 		):
 			speech, braille = NvdaLib.getSpeechAndBrailleAfterKey(key)
 			BuiltIn().should_contain(speech, f"{label}  with {count} item")
@@ -154,6 +154,11 @@ class descriptionListTests:
 			if label == "list":
 				BuiltIn().should_not_contain(speech, "description list  with 1 item")
 				BuiltIn().should_not_contain(braille, "dlst1")
+		# Returning to a common ancestor does not repeat its entry announcement.
+		speech, braille = NvdaLib.getSpeechAndBrailleAfterKey("shift+l")
+		BuiltIn().should_be_equal(speech, "Alpha  term  with 2 definitions")
+		for text in ("dlst2", "trm 2 defs", "Alpha"):
+			BuiltIn().should_contain(braille, text)
 		BuiltIn().should_contain(NvdaLib.getSpeechAfterKey(","), "Toggle definition")
 		NvdaLib.getSpeechAfterKey("control+home")
 		for term, count in (("Alpha", 2), ("Alias", 2), ("Nested", 3), ("Solo", 1)):
