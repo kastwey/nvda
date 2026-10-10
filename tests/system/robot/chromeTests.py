@@ -907,7 +907,7 @@ def test_definitionList_semantics() -> None:
 			<p>After list</p>
 		""",
 	)
-	actualSpeech = [_chrome.getSpeechAfterKey("h")]
+	_chrome.getSpeechAfterKey("h")
 	actualQuickNavSpeech = [_chrome.getSpeechAfterKey("i") for _ in range(5)]
 	_builtIn.should_be_equal(
 		actualQuickNavSpeech,

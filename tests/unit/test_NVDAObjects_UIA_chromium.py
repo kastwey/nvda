@@ -3,7 +3,7 @@
 # This file may be used under the terms of the GNU General Public License, version 2 or later, as modified by the NVDA license.
 # For full terms and any additional permissions, see the NVDA license file: https://github.com/nvaccess/nvda/blob/master/copying.txt
 
-"""Chromium UIA and native web provider description-list regressions."""
+"""Chromium UIA description-list regressions."""
 
 import unittest  # noqa: I001
 from types import SimpleNamespace
@@ -12,17 +12,10 @@ from unittest.mock import Mock, patch
 import IAccessibleHandler  # noqa: F401 - Initialize before importing IAccessible object modules.
 import config
 import controlTypes
-import oleacc
 import textInfos
 from braille.regions.properties import getControlFieldBraille
-from comInterfaces import IAccessible2Lib as IA2
-from NVDAObjects.IAccessible import IAccessible
-from NVDAObjects.IAccessible.ia2Web import Ia2Web
-from NVDAObjects.IAccessible.MSHTML import MSHTML as MSHTMLObject
 from NVDAObjects.UIA import chromium
 from speech.speech import getControlFieldSpeech
-from virtualBuffers.gecko_ia2 import Gecko_ia2, Gecko_ia2_TextInfo
-from virtualBuffers.MSHTML import MSHTML, MSHTMLTextInfo
 
 
 class _Element:
@@ -268,7 +261,7 @@ class TestDescriptionListGroupCount(unittest.TestCase):
 		# Chromium's "description" role identifies static text, not a dd container.
 		self.assertIsNone(chromium._getDescriptionListInfo(_listElement("listitem", "description")))
 
-	def test_comFailureDiscardsPartialCounts(self) -> None:
+	def test_comFailureReturnsNoCounts(self) -> None:
 		for obj, method in (
 			(_Element, "getCachedChildren"),
 			(_Element, "getCachedPropertyValue"),
@@ -279,6 +272,25 @@ class TestDescriptionListGroupCount(unittest.TestCase):
 				patch.object(obj, method, side_effect=chromium.COMError(-2147467259, "Failed", None)),
 			):
 				self.assertIsNone(chromium._getDescriptionListInfo(_listElement("term", "definition")))
+
+	def test_comFailureDiscardsPartialCounts(self) -> None:
+		firstTerm = _Element("term")
+		wrapper = _Element("group", [_Element("definition")])
+		listElement = _Element("list", [firstTerm, _Element("definition"), _Element("term"), wrapper])
+		partialInfo = chromium._DescriptionListInfo()
+		with (
+			patch.object(chromium, "_DescriptionListInfo", return_value=partialInfo),
+			patch.object(
+				wrapper,
+				"getCachedChildren",
+				side_effect=chromium.COMError(-2147467259, "Failed", None),
+			) as getChildren,
+		):
+			self.assertIsNone(chromium._getDescriptionListInfo(listElement))
+		getChildren.assert_called_once_with()
+		# The first group was recorded before reading the second group's wrapper failed.
+		self.assertEqual(1, partialInfo.groupCount)
+		self.assertEqual({firstTerm.getRuntimeId(): 1}, partialInfo.definitionCounts)
 
 	def test_largeListUsesOneRawViewSnapshot(self) -> None:
 		listElement = _listElement(*(["term", "definition"] * 1000))
@@ -588,129 +600,3 @@ class TestDescriptionListNames(unittest.TestCase):
 				self.assertEqual(expectedContent, field.get("content"))
 				self.assertNotIn("name", field)
 				self.assertNotIn("_descriptionListNameElement", field)
-
-
-class TestNativeDescriptionListRoles(unittest.TestCase):
-	def test_bufferRolesAndCounts(self) -> None:
-		for textInfoClass, tagAttribute, roleAttribute in (
-			(Gecko_ia2_TextInfo, "IAccessible2::attribute_tag", "IAccessible2::attribute_xml-roles"),
-			(MSHTMLTextInfo, "IHTMLDOMNode::nodeName", "HTMLAttrib::role"),
-		):
-			for tag, ariaRole, nativeRole, expectedRole in (
-				("dl", "", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.DESCRIPTIONLIST),
-				("dl", "unsupported", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.DESCRIPTIONLIST),
-				("dl", "list", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.LIST),
-				("dl", "unsupported list", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.LIST),
-				("dl", "unsupported\tlistbox", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.LIST),
-				("dl", "listbox", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.LIST),
-				("dl", "button list", oleacc.ROLE_SYSTEM_PUSHBUTTON, controlTypes.Role.BUTTON),
-				("ul", "", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.LIST),
-				("ol", "", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.LIST),
-				("div", "term", IA2.IA2_ROLE_TEXT_FRAME, controlTypes.Role.TERM),
-				("div", "unsupported term", IA2.IA2_ROLE_TEXT_FRAME, controlTypes.Role.TERM),
-				("div", "button term", oleacc.ROLE_SYSTEM_PUSHBUTTON, controlTypes.Role.BUTTON),
-			):
-				with self.subTest(provider=textInfoClass, tag=tag, ariaRole=ariaRole):
-					info = textInfoClass.__new__(textInfoClass)
-					field = textInfos.ControlField(
-						{
-							"IAccessible::role": str(nativeRole),
-							tagAttribute: tag.upper() if textInfoClass is MSHTMLTextInfo else tag,
-							roleAttribute: ariaRole,
-							"_childcontrolcount": "7",
-						},
-					)
-					if tag == "dl":
-						field["description-list-group-count"] = "2"
-					info._normalizeControlField(field)
-					self.assertEqual(expectedRole, field["role"])
-					self.assertEqual(
-						2 if expectedRole == controlTypes.Role.DESCRIPTIONLIST else 7,
-						int(field["_childcontrolcount"]),
-					)
-
-	def test_ia2ObjectRoles(self) -> None:
-		for tag, ariaRole, expectedRole in (
-			("dl", "", controlTypes.Role.DESCRIPTIONLIST),
-			("dl", "unsupported", controlTypes.Role.DESCRIPTIONLIST),
-			("dl", "list", controlTypes.Role.LIST),
-			("dl", "unsupported listbox", controlTypes.Role.LIST),
-			("ul", "", controlTypes.Role.LIST),
-			("ol", "", controlTypes.Role.LIST),
-		):
-			with (
-				self.subTest(tag=tag, ariaRole=ariaRole),
-				patch.object(IAccessible, "role", controlTypes.Role.LIST),
-				patch.object(Ia2Web, "IA2Attributes", {"tag": tag, "xml-roles": ariaRole}),
-			):
-				obj = object.__new__(Ia2Web)
-				self.assertEqual(expectedRole, obj._get_role())
-
-	def test_mshtmlObjectRoles(self) -> None:
-		for hasAncestor in (False, True):
-			for ariaRole, expectedRole in (
-				("", controlTypes.Role.DESCRIPTIONLIST),
-				("unsupported", controlTypes.Role.DESCRIPTIONLIST),
-				("list", controlTypes.Role.LIST),
-				("unsupported list", controlTypes.Role.LIST),
-				("button list", controlTypes.Role.BUTTON),
-			):
-				with (
-					self.subTest(hasAncestor=hasAncestor, ariaRole=ariaRole),
-					patch.multiple(
-						MSHTMLObject,
-						create=True,
-						HTMLNode=True,
-						HTMLAttributes={"role": ariaRole},
-						HTMLNodeName="DL",
-						HTMLNodeHasAncestorIAccessible=hasAncestor,
-					),
-				):
-					obj = object.__new__(MSHTMLObject)
-					self.assertEqual(expectedRole, obj._get_role())
-
-	def test_mshtmlTermAndDefinitionObjectRoles(self) -> None:
-		for hasAncestor in (False, True):
-			for tag, nativeRole in (("DT", controlTypes.Role.TERM), ("DD", controlTypes.Role.DEFINITION)):
-				for ariaRole, expected in (
-					("", nativeRole),
-					("unsupported", nativeRole),
-					("button", controlTypes.Role.BUTTON),
-				):
-					with (
-						self.subTest(hasAncestor=hasAncestor, tag=tag, ariaRole=ariaRole),
-						patch.multiple(
-							MSHTMLObject,
-							create=True,
-							HTMLNode=True,
-							HTMLAttributes={"role": ariaRole},
-							HTMLNodeName=tag,
-							HTMLNodeHasAncestorIAccessible=hasAncestor,
-						),
-					):
-						self.assertEqual(expected, object.__new__(MSHTMLObject)._get_role())
-
-	def test_nativeListQuickNavIsUnchanged(self) -> None:
-		self.assertEqual(
-			{"IAccessible::role": [oleacc.ROLE_SYSTEM_LIST]},
-			Gecko_ia2._searchableAttribsForNodeType(None, "list"),
-		)
-		self.assertEqual(
-			{"IHTMLDOMNode::nodeName": ["UL", "OL", "DL"]},
-			MSHTML._searchableAttribsForNodeType(None, "list"),
-		)
-
-	def test_mshtmlUnknownRoleDoesNotBecomeAnEditField(self) -> None:
-		with (
-			patch.object(IAccessible, "role", controlTypes.Role.EDITABLETEXT),
-			patch.multiple(
-				MSHTMLObject,
-				create=True,
-				HTMLNode=True,
-				HTMLAttributes={"role": "unsupported"},
-				HTMLNodeName="FUTURE-TAG",
-				HTMLNodeHasAncestorIAccessible=False,
-				IAccessibleChildID=0,
-			),
-		):
-			self.assertEqual(controlTypes.Role.STATICTEXT, object.__new__(MSHTMLObject)._get_role())

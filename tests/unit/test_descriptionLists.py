@@ -3,7 +3,7 @@
 # This file may be used under the terms of the GNU General Public License, version 2 or later, as modified by the NVDA license.
 # For full terms and any additional permissions, see the NVDA license file: https://github.com/nvaccess/nvda/blob/master/copying.txt
 
-"""Description-list counts at the native-buffer and presentation boundaries."""
+"""Description-list roles and counts at the native-object, buffer and presentation boundaries."""
 
 import unittest  # noqa: I001
 from types import SimpleNamespace
@@ -16,10 +16,14 @@ import controlTypes
 import oleacc
 import textInfos
 from braille.regions.properties import getControlFieldBraille
+from comInterfaces import IAccessible2Lib as IA2
 from controlTypes import OutputReason
+from NVDAObjects.IAccessible import IAccessible
+from NVDAObjects.IAccessible.ia2Web import Ia2Web
+from NVDAObjects.IAccessible.MSHTML import MSHTML as MSHTMLObject
 from speech.speech import getControlFieldSpeech
-from virtualBuffers.gecko_ia2 import Gecko_ia2_TextInfo
-from virtualBuffers.MSHTML import MSHTMLTextInfo
+from virtualBuffers.gecko_ia2 import Gecko_ia2, Gecko_ia2_TextInfo
+from virtualBuffers.MSHTML import MSHTML, MSHTMLTextInfo
 
 
 class TestDescriptionListFocusMode(unittest.TestCase):
@@ -119,25 +123,6 @@ class TestDescriptionListFields(unittest.TestCase):
 					info._normalizeControlField(field)
 					self.assertEqual(controlTypes.Role.TERM, field["role"])
 					self.assertEqual(count, field["definition-count"])
-
-	def test_nativeListGroupCount(self) -> None:
-		for textInfoClass, tagAttribute, tag in (
-			(Gecko_ia2_TextInfo, "IAccessible2::attribute_tag", "dl"),
-			(MSHTMLTextInfo, "IHTMLDOMNode::nodeName", "DL"),
-		):
-			with self.subTest(backend=textInfoClass):
-				info = textInfoClass.__new__(textInfoClass)
-				field = textInfos.ControlField(
-					{
-						"IAccessible::role": str(oleacc.ROLE_SYSTEM_LIST),
-						tagAttribute: tag,
-						"description-list-group-count": "2",
-						"_childcontrolcount": "7",
-					},
-				)
-				info._normalizeControlField(field)
-				self.assertEqual(controlTypes.Role.DESCRIPTIONLIST, field["role"])
-				self.assertEqual(2, int(field["_childcontrolcount"]))
 
 
 class TestDescriptionListPresentation(unittest.TestCase):
@@ -301,3 +286,129 @@ class TestDescriptionListPresentation(unittest.TestCase):
 			],
 		)
 		self.assertEqual("ent 2 defs", getControlFieldBraille(None, field, [], True, self.formatConfig))
+
+
+class TestNativeDescriptionListRoles(unittest.TestCase):
+	def test_bufferRolesAndCounts(self) -> None:
+		for textInfoClass, tagAttribute, roleAttribute in (
+			(Gecko_ia2_TextInfo, "IAccessible2::attribute_tag", "IAccessible2::attribute_xml-roles"),
+			(MSHTMLTextInfo, "IHTMLDOMNode::nodeName", "HTMLAttrib::role"),
+		):
+			for tag, ariaRole, nativeRole, expectedRole in (
+				("dl", "", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.DESCRIPTIONLIST),
+				("dl", "unsupported", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.DESCRIPTIONLIST),
+				("dl", "list", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.LIST),
+				("dl", "unsupported list", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.LIST),
+				("dl", "unsupported\tlistbox", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.LIST),
+				("dl", "listbox", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.LIST),
+				("dl", "button list", oleacc.ROLE_SYSTEM_PUSHBUTTON, controlTypes.Role.BUTTON),
+				("ul", "", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.LIST),
+				("ol", "", oleacc.ROLE_SYSTEM_LIST, controlTypes.Role.LIST),
+				("div", "term", IA2.IA2_ROLE_TEXT_FRAME, controlTypes.Role.TERM),
+				("div", "unsupported term", IA2.IA2_ROLE_TEXT_FRAME, controlTypes.Role.TERM),
+				("div", "button term", oleacc.ROLE_SYSTEM_PUSHBUTTON, controlTypes.Role.BUTTON),
+			):
+				with self.subTest(provider=textInfoClass, tag=tag, ariaRole=ariaRole):
+					info = textInfoClass.__new__(textInfoClass)
+					field = textInfos.ControlField(
+						{
+							"IAccessible::role": str(nativeRole),
+							tagAttribute: tag.upper() if textInfoClass is MSHTMLTextInfo else tag,
+							roleAttribute: ariaRole,
+							"_childcontrolcount": "7",
+						},
+					)
+					if tag == "dl":
+						field["description-list-group-count"] = "2"
+					info._normalizeControlField(field)
+					self.assertEqual(expectedRole, field["role"])
+					self.assertEqual(
+						2 if expectedRole == controlTypes.Role.DESCRIPTIONLIST else 7,
+						int(field["_childcontrolcount"]),
+					)
+
+	def test_ia2ObjectRoles(self) -> None:
+		for tag, ariaRole, expectedRole in (
+			("dl", "", controlTypes.Role.DESCRIPTIONLIST),
+			("dl", "unsupported", controlTypes.Role.DESCRIPTIONLIST),
+			("dl", "list", controlTypes.Role.LIST),
+			("dl", "unsupported listbox", controlTypes.Role.LIST),
+			("ul", "", controlTypes.Role.LIST),
+			("ol", "", controlTypes.Role.LIST),
+		):
+			with (
+				self.subTest(tag=tag, ariaRole=ariaRole),
+				patch.object(IAccessible, "role", controlTypes.Role.LIST),
+				patch.object(Ia2Web, "IA2Attributes", {"tag": tag, "xml-roles": ariaRole}),
+			):
+				obj = object.__new__(Ia2Web)
+				self.assertEqual(expectedRole, obj._get_role())
+
+	def test_mshtmlObjectRoles(self) -> None:
+		for hasAncestor in (False, True):
+			for ariaRole, expectedRole in (
+				("", controlTypes.Role.DESCRIPTIONLIST),
+				("unsupported", controlTypes.Role.DESCRIPTIONLIST),
+				("list", controlTypes.Role.LIST),
+				("unsupported list", controlTypes.Role.LIST),
+				("button list", controlTypes.Role.BUTTON),
+			):
+				with (
+					self.subTest(hasAncestor=hasAncestor, ariaRole=ariaRole),
+					patch.multiple(
+						MSHTMLObject,
+						create=True,
+						HTMLNode=True,
+						HTMLAttributes={"role": ariaRole},
+						HTMLNodeName="DL",
+						HTMLNodeHasAncestorIAccessible=hasAncestor,
+					),
+				):
+					obj = object.__new__(MSHTMLObject)
+					self.assertEqual(expectedRole, obj._get_role())
+
+	def test_mshtmlTermAndDefinitionObjectRoles(self) -> None:
+		for hasAncestor in (False, True):
+			for tag, nativeRole in (("DT", controlTypes.Role.TERM), ("DD", controlTypes.Role.DEFINITION)):
+				for ariaRole, expected in (
+					("", nativeRole),
+					("unsupported", nativeRole),
+					("button", controlTypes.Role.BUTTON),
+				):
+					with (
+						self.subTest(hasAncestor=hasAncestor, tag=tag, ariaRole=ariaRole),
+						patch.multiple(
+							MSHTMLObject,
+							create=True,
+							HTMLNode=True,
+							HTMLAttributes={"role": ariaRole},
+							HTMLNodeName=tag,
+							HTMLNodeHasAncestorIAccessible=hasAncestor,
+						),
+					):
+						self.assertEqual(expected, object.__new__(MSHTMLObject)._get_role())
+
+	def test_nativeListQuickNavIsUnchanged(self) -> None:
+		self.assertEqual(
+			{"IAccessible::role": [oleacc.ROLE_SYSTEM_LIST]},
+			Gecko_ia2._searchableAttribsForNodeType(None, "list"),
+		)
+		self.assertEqual(
+			{"IHTMLDOMNode::nodeName": ["UL", "OL", "DL"]},
+			MSHTML._searchableAttribsForNodeType(None, "list"),
+		)
+
+	def test_mshtmlUnknownRoleDoesNotBecomeAnEditField(self) -> None:
+		with (
+			patch.object(IAccessible, "role", controlTypes.Role.EDITABLETEXT),
+			patch.multiple(
+				MSHTMLObject,
+				create=True,
+				HTMLNode=True,
+				HTMLAttributes={"role": "unsupported"},
+				HTMLNodeName="FUTURE-TAG",
+				HTMLNodeHasAncestorIAccessible=False,
+				IAccessibleChildID=0,
+			),
+		):
+			self.assertEqual(controlTypes.Role.STATICTEXT, object.__new__(MSHTMLObject)._get_role())
